@@ -3,180 +3,1099 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitTrack</title>
+    <title>FitTrack Pro</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: white; }
-        .container { width: 100%; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .content { width: 100%; max-width: 400px; text-align: center; }
-        .logo { font-size: 48px; margin-bottom: 20px; }
-        h1 { font-size: 24px; margin-bottom: 10px; }
-        p { font-size: 14px; color: #666; margin-bottom: 30px; }
-        .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        button { padding: 15px; font-size: 14px; font-weight: 600; border: 2px solid #e0e0e0; border-radius: 8px; background: white; cursor: pointer; }
-        button.active { border-color: #0088cc; background: #0088cc; color: white; }
-        .form-group { margin-bottom: 16px; text-align: left; }
-        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
-        input, select { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #e0e0e0; border-radius: 8px; }
-        .btn-login { width: 100%; padding: 12px; font-size: 16px; font-weight: 600; border: none; border-radius: 8px; background: #0088cc; color: white; cursor: pointer; margin-top: 10px; }
-        .hidden { display: none; }
-        .dashboard { width: 100%; max-width: 600px; padding: 20px; background: white; border-radius: 12px; }
-        .navbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0; }
-        .card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 16px; text-align: center; }
-        .card-label { font-size: 12px; opacity: 0.8; }
-        .card-value { font-size: 32px; font-weight: 700; margin-top: 8px; }
-        .success { background: #d4edda; color: #155724; padding: 12px; border-radius: 8px; margin-bottom: 16px; }
-        .error { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 16px; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .app { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
+        
+        /* Login */
+        .login-screen {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .logo { font-size: 64px; text-align: center; margin-bottom: 12px; }
+        .login-box h1 { font-size: 28px; text-align: center; margin-bottom: 8px; color: #333; }
+        .login-box > p { font-size: 14px; text-align: center; color: #666; margin-bottom: 30px; }
+
+        .role-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .role-btn {
+            padding: 16px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .role-btn:hover { border-color: #667eea; background: #f8f9ff; }
+        .role-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+        .btn:active { transform: translateY(0); }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+            width: auto;
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .hidden { display: none !important; }
+
+        /* Dashboard */
+        .dashboard {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f5f7fa;
+        }
+
+        .navbar {
+            background: white;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .navbar h2 { font-size: 20px; color: #333; }
+        .logout-btn { padding: 8px 16px; background: #f0f0f0; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .section { margin-bottom: 24px; }
+        .section h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: #333; }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            text-align: center;
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-label { font-size: 12px; opacity: 0.8; margin-bottom: 4px; }
+        .stat-value { font-size: 36px; font-weight: 700; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+        .card {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: all 0.2s;
+        }
+
+        .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+
+        .form-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .form-section h4 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #333; }
+
+        .workout-templates {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .workout-template {
+            padding: 16px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .workout-template:hover { border-color: #667eea; background: #f8f9ff; }
+        .workout-template.selected { border-color: #667eea; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+
+        .exercises-list {
+            background: #f5f7fa;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .exercise-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            border: 1px solid #e0e0e0;
+        }
+
+        .exercise-item:hover { background: #f8f9ff; }
+        .exercise-item.selected { background: #e8f0ff; border-color: #667eea; }
+
+        .note-item {
+            background: white;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .note-date { font-size: 11px; color: #999; margin-top: 4px; }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+        }
+
+        .message {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .message.show { display: block; }
+        .message.success { background: #d4edda; color: #155724; }
+        .message.error { background: #f8d7da; color: #721c24; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table th {
+            text-align: left;
+            padding: 12px;
+            background: #f5f7fa;
+            border-bottom: 2px solid #e0e0e0;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        table tr:hover { background: #f8f9ff; }
+
+        .chart-container { position: relative; height: 300px; margin-bottom: 20px; }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .login-box { padding: 24px; }
+            .navbar { flex-direction: column; gap: 12px; }
+            .content { padding: 12px; }
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="content">
-        <div id="loginScreen">
+
+<div class="app">
+    <!-- LOGIN -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-box">
             <div class="logo">💪</div>
-            <h1>FitTrack</h1>
-            <p>Управление клиентами</p>
-            <div class="buttons">
-                <button id="btnTrainer" onclick="selectRole('trainer')" class="active">👨‍🏫 Тренер</button>
-                <button id="btnClient" onclick="selectRole('client')">💪 Клиент</button>
+            <h1>FitTrack Pro</h1>
+            <p>Профессиональное управление фитнесом</p>
+            
+            <div class="role-buttons">
+                <button class="role-btn active" onclick="setRole('trainer')">👨‍🏫 Тренер</button>
+                <button class="role-btn" onclick="setRole('client')">💪 Клиент</button>
             </div>
-            <div id="trainerForm">
+            
+            <div id="trainerLoginForm">
                 <div class="form-group">
                     <label>Пин-код</label>
                     <input type="password" id="pinInput" placeholder="1234" maxlength="4">
                 </div>
-                <button class="btn-login" onclick="loginTrainer()">Вход</button>
-                <p style="font-size: 11px; color: #999; margin-top: 12px;">Пин по умолчанию: 1234</p>
+                <button class="btn" onclick="loginTrainer()">Вход в админ-панель</button>
+                <p style="font-size: 11px; color: #999; text-align: center; margin-top: 12px;">Пин: 1234</p>
             </div>
-            <div id="clientForm" class="hidden">
+            
+            <div id="clientLoginForm" class="hidden">
                 <div class="form-group">
                     <label>Выберите профиль</label>
-                    <select id="clientSelect">
-                        <option value="">-- Загрузка --</option>
-                    </select>
+                    <select id="clientSelect"></select>
                 </div>
-                <button class="btn-login" onclick="loginClient()">Вход</button>
+                <button class="btn" onclick="loginClient()">Вход</button>
             </div>
-            <div id="message"></div>
+            
+            <div id="message" class="message"></div>
         </div>
-        <div id="trainerDashboard" class="hidden">
-            <div class="navbar">
-                <h2>👨‍🏫 Админ-панель</h2>
-                <button onclick="logout()" style="background: none; border: none; font-size: 20px; cursor: pointer;">🚪</button>
-            </div>
-            <div id="trainerContent"></div>
+    </div>
+    
+    <!-- TRAINER DASHBOARD -->
+    <div id="trainerDashboard" class="dashboard hidden">
+        <div class="navbar">
+            <h2>👨‍🏫 Админ-панель</h2>
+            <button class="logout-btn" onclick="logout()">Выход</button>
         </div>
-        <div id="clientDashboard" class="hidden">
-            <div class="navbar">
-                <h2 id="clientName">💪 Клиент</h2>
-                <button onclick="logout()" style="background: none; border: none; font-size: 20px; cursor: pointer;">🚪</button>
+        <div class="content">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="setTab('trainer', 'overview')">Обзор</button>
+                <button class="tab-btn" onclick="setTab('trainer', 'clients')">Клиенты</button>
+                <button class="tab-btn" onclick="setTab('trainer', 'analytics')">Аналитика</button>
             </div>
-            <div id="clientContent"></div>
+            
+            <div id="trainer-overview">
+                <div class="grid-3">
+                    <div class="stat-card">
+                        <div class="stat-label">Всего клиентов</div>
+                        <div class="stat-value" id="totalClients">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Средний прогресс</div>
+                        <div class="stat-value" id="avgProgress">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Активных сегодня</div>
+                        <div class="stat-value" id="activeToday">0</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <h3>Клиенты и их прогресс</h3>
+                    <div id="clientsList"></div>
+                </div>
+            </div>
+            
+            <div id="trainer-clients" class="hidden">
+                <div class="section">
+                    <table>
+                        <thead>
+                            <tr><th>Имя</th><th>Цель</th><th>Вес</th><th>Прогресс</th><th>Заметок</th></tr>
+                        </thead>
+                        <tbody id="clientsTable"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="trainer-analytics" class="hidden">
+                <div class="section">
+                    <h3>Прогресс клиентов</h3>
+                    <div class="chart-container">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- CLIENT DASHBOARD -->
+    <div id="clientDashboard" class="dashboard hidden">
+        <div class="navbar">
+            <h2 id="clientTitle">💪 Клиент</h2>
+            <button class="logout-btn" onclick="logout()">Выход</button>
+        </div>
+        <div class="content">
+            <div id="message" class="message"></div>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="setTab('client', 'profile')">Профиль</button>
+                <button class="tab-btn" onclick="setTab('client', 'goals')">Цели</button>
+                <button class="tab-btn" onclick="setTab('client', 'weight')">Вес</button>
+                <button class="tab-btn" onclick="setTab('client', 'meals')">Питание</button>
+                <button class="tab-btn" onclick="setTab('client', 'workouts')">Тренировки</button>
+                <button class="tab-btn" onclick="setTab('client', 'notes')">Заметки</button>
+            </div>
+            
+            <!-- Profile -->
+            <div id="client-profile">
+                <div class="grid-3">
+                    <div class="stat-card">
+                        <div class="stat-label">Текущий вес</div>
+                        <div class="stat-value" id="clientWeight">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">% жира</div>
+                        <div class="stat-value" id="clientFat">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Прогресс</div>
+                        <div class="stat-value" id="clientProgress">0%</div>
+                    </div>
+                </div>
+                <div class="section">
+                    <h3>Ваша цель</h3>
+                    <div class="card">
+                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;" id="clientGoalText">-</div>
+                        <div style="font-size: 13px; color: #666; margin-bottom: 12px;" id="clientGoalDetails">-</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressBarFill" style="width: 0%"></div>
+                        </div>
+                        <div style="text-align: center; font-size: 12px; color: #999;">
+                            <span id="progressPercent">0</span>% завершено
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Goals -->
+            <div id="client-goals" class="hidden">
+                <div class="section">
+                    <div class="form-section">
+                        <h4>Установить/изменить цель</h4>
+                        <div class="form-group">
+                            <label>Основная цель</label>
+                            <select id="goalSelect">
+                                <option value="Набор мышечной массы">💪 Набор мышечной массы</option>
+                                <option value="Похудение">🔥 Похудение</option>
+                                <option value="Повышение выносливости">🏃 Повышение выносливости</option>
+                                <option value="Улучшение силы">⚡ Улучшение силы</option>
+                                <option value="Релиф">✨ Релиф</option>
+                                <option value="Поддержание формы">📊 Поддержание формы</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Детали цели</label>
+                            <textarea id="goalDetails" placeholder="Напишите свои подробные планы..." style="width: 100%; min-height: 100px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;"></textarea>
+                        </div>
+                        <button class="btn" onclick="setGoal()">Сохранить цель</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Weight -->
+            <div id="client-weight" class="hidden">
+                <div class="section">
+                    <div class="form-section">
+                        <h4>Записать вес</h4>
+                        <div class="form-group">
+                            <label>Вес (кг)</label>
+                            <input type="number" id="weightInput" placeholder="75" step="0.1">
+                        </div>
+                        <button class="btn" onclick="recordWeight()">Записать</button>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h3>График веса</h3>
+                        <div class="chart-container">
+                            <canvas id="weightChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Meals -->
+            <div id="client-meals" class="hidden">
+                <div class="section">
+                    <div class="form-section">
+                        <h4>Добавить прием пищи</h4>
+                        <div class="form-group">
+                            <label>Блюдо</label>
+                            <input type="text" id="mealName" placeholder="Курица с рисом">
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Калории</label>
+                                <input type="number" id="mealCalories" placeholder="500">
+                            </div>
+                            <div class="form-group">
+                                <label>Белки (г)</label>
+                                <input type="number" id="mealProteins" placeholder="30">
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Жиры (г)</label>
+                                <input type="number" id="mealFats" placeholder="10">
+                            </div>
+                            <div class="form-group">
+                                <label>Углеводы (г)</label>
+                                <input type="number" id="mealCarbs" placeholder="60">
+                            </div>
+                        </div>
+                        <button class="btn" onclick="addMeal()">Добавить 🍽️</button>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <h3>История</h3>
+                        <table>
+                            <thead><tr><th>Блюдо</th><th>Калории</th><th>Б/Ж/У</th></tr></thead>
+                            <tbody id="mealsList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Workouts -->
+            <div id="client-workouts" class="hidden">
+                <div class="section">
+                    <div class="form-section">
+                        <h4>Быстрый выбор тренировки</h4>
+                        <div class="workout-templates">
+                            <button class="workout-template" onclick="selectWorkout('Кардио')">🏃<br>Кардио</button>
+                            <button class="workout-template" onclick="selectWorkout('Силовая')">💪<br>Силовая</button>
+                            <button class="workout-template" onclick="selectWorkout('Круговая')">🔄<br>Круговая</button>
+                            <button class="workout-template" onclick="selectWorkout('Растяжка')">🧘<br>Растяжка</button>
+                            <button class="workout-template" onclick="selectWorkout('Йога')">🕉️<br>Йога</button>
+                            <button class="workout-template" onclick="selectWorkout('HIIT')">⚡<br>HIIT</button>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h4>Детали тренировки</h4>
+                        <div class="form-group">
+                            <label>Тип</label>
+                            <select id="workoutType">
+                                <option value="Кардио">🏃 Кардио</option>
+                                <option value="Силовая">💪 Силовая</option>
+                                <option value="Круговая">🔄 Круговая</option>
+                                <option value="Растяжка">🧘 Растяжка</option>
+                                <option value="Йога">🕉️ Йога</option>
+                                <option value="HIIT">⚡ HIIT</option>
+                            </select>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label>Длительность (мин)</label>
+                                <input type="number" id="workoutDuration" placeholder="60">
+                            </div>
+                            <div class="form-group">
+                                <label>Интенсивность</label>
+                                <select id="workoutIntensity">
+                                    <option value="Низкая">Низкая</option>
+                                    <option value="Средняя" selected>Средняя</option>
+                                    <option value="Высокая">Высокая</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <h4 style="margin-top: 16px; margin-bottom: 12px;">Упражнения (опционально)</h4>
+                        <div class="exercises-list" id="exercisesList"></div>
+                        
+                        <button class="btn" onclick="addWorkout()" style="margin-top: 16px;">Добавить тренировку 🏋️</button>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h3>История</h3>
+                        <table>
+                            <thead><tr><th>Тип</th><th>Дата</th><th>Длит.</th><th>Интенсив.</th></tr></thead>
+                            <tbody id="workoutsList"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notes -->
+            <div id="client-notes" class="hidden">
+                <div class="section">
+                    <div class="form-section">
+                        <h4>Добавить заметку</h4>
+                        <div class="form-group">
+                            <label>Заметка</label>
+                            <textarea id="noteText" placeholder="Напишите вашу заметку..." style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;"></textarea>
+                        </div>
+                        <button class="btn" onclick="addNote()">Добавить заметку 📝</button>
+                    </div>
+                    <div style="margin-top: 20px;">
+                        <div id="notesList"></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
-    let currentRole = 'trainer';
-    let currentUser = null;
-    function selectRole(role) {
-        currentRole = role;
-        document.getElementById('btnTrainer').classList.toggle('active', role === 'trainer');
-        document.getElementById('btnClient').classList.toggle('active', role === 'client');
-        document.getElementById('trainerForm').classList.toggle('hidden', role === 'client');
-        document.getElementById('clientForm').classList.toggle('hidden', role === 'trainer');
-        if (role === 'client') loadClients();
+// Тренировочные упражнения
+const exercises = {
+    'Кардио': ['Бег', 'Велосипед', 'Прыжки', 'Эллипс', 'Степпер'],
+    'Силовая': ['Жим лежа', 'Приседания', 'Становая тяга', 'Подтягивания', 'Отжимания'],
+    'Круговая': ['Бёрпи', 'Прыгающие приседания', 'Горная альпинистка', 'Прыжки в длину'],
+    'Растяжка': ['Растяжка ног', 'Растяжка спины', 'Растяжка рук', 'Шпагат'],
+    'Йога': ['Солнечное приветствие', 'Поза дерева', 'Асана воина', 'Поза лотоса'],
+    'HIIT': ['Спринт 30сек', 'Отдых 30сек', 'Прыжки', 'Отжимания']
+};
+
+let currentRole = 'trainer';
+let currentTab = {};
+let currentUser = null;
+let chartInstances = {};
+let selectedExercises = [];
+
+function log(msg) { console.log('[FitTrack]', msg); }
+
+function showMessage(text, type = 'success') {
+    const msg = document.getElementById('message');
+    msg.className = 'message show ' + type;
+    msg.textContent = text;
+    setTimeout(() => { msg.classList.remove('show'); }, 3000);
+}
+
+function setRole(role) {
+    currentRole = role;
+    document.querySelectorAll('.role-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', (i === 0 && role === 'trainer') || (i === 1 && role === 'client'));
+    });
+    document.getElementById('trainerLoginForm').classList.toggle('hidden', role === 'client');
+    document.getElementById('clientLoginForm').classList.toggle('hidden', role === 'trainer');
+    if (role === 'client') loadClientsForLogin();
+}
+
+function setTab(view, tab) {
+    currentTab[view] = tab;
+    document.querySelectorAll(`[id^="${view}-"]`).forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    const el = document.getElementById(`${view}-${tab}`);
+    if (el) el.classList.remove('hidden');
+    
+    if (view === 'client' && tab === 'workouts') loadExercises();
+    if (view === 'client' && tab === 'weight') setTimeout(() => drawWeightChart(), 100);
+    if (view === 'client' && tab === 'meals') loadMeals();
+    if (view === 'client' && tab === 'workouts') loadWorkouts();
+    if (view === 'client' && tab === 'notes') loadNotes();
+    if (view === 'trainer' && tab === 'analytics') setTimeout(() => drawProgressChart(), 100);
+}
+
+async function loadClientsForLogin() {
+    try {
+        const res = await fetch('/api/clients');
+        const clients = await res.json();
+        const select = document.getElementById('clientSelect');
+        select.innerHTML = clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    } catch (e) { log('Error: ' + e); }
+}
+
+async function loginTrainer() {
+    const pin = document.getElementById('pinInput').value;
+    try {
+        const res = await fetch('/api/login/trainer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin })
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentUser = 'trainer';
+            showTrainerUI();
+        } else {
+            showMessage('Неверный пин-код', 'error');
+        }
+    } catch (e) {
+        showMessage('Ошибка подключения', 'error');
     }
-    function showMessage(text, type = 'success') {
-        const msg = document.getElementById('message');
-        msg.className = type;
-        msg.textContent = text;
-        setTimeout(() => msg.style.display = 'none', 3000);
+}
+
+async function loginClient() {
+    const clientId = document.getElementById('clientSelect').value;
+    if (!clientId) {
+        showMessage('Выберите профиль', 'error');
+        return;
     }
-    async function loginTrainer() {
-        const pin = document.getElementById('pinInput').value;
-        try {
-            const response = await fetch('/api/login/trainer', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ pin })
-            });
-            const data = await response.json();
-            if (data.success) {
-                currentUser = 'trainer';
-                showTrainerDashboard();
-            } else {
-                showMessage(data.message || 'Ошибка входа', 'error');
+    try {
+        const res = await fetch('/api/login/client', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId })
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentUser = clientId;
+            showClientUI(data.name);
+        } else {
+            showMessage('Ошибка входа', 'error');
+        }
+    } catch (e) {
+        showMessage('Ошибка подключения', 'error');
+    }
+}
+
+async function showTrainerUI() {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('trainerDashboard').classList.remove('hidden');
+    loadTrainerDashboard();
+}
+
+async function loadTrainerDashboard() {
+    try {
+        const res = await fetch('/api/clients');
+        const clients = await res.json();
+        
+        document.getElementById('totalClients').textContent = clients.length;
+        const avgProg = Math.round(clients.reduce((sum, c) => sum + c.progress, 0) / (clients.length || 1));
+        document.getElementById('avgProgress').textContent = avgProg + '%';
+        document.getElementById('activeToday').textContent = Math.floor(clients.length * 0.7);
+        
+        let html = '';
+        clients.forEach(c => {
+            html += `<div class="card" style="margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 16px;">${c.name}</div>
+                        <div style="font-size: 12px; color: #666; margin-top: 4px;">${c.goal}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 14px; font-weight: 600; color: #667eea;">${c.progress}%</div>
+                        <div style="font-size: 12px; color: #999;">Вес: ${c.stats.weight}кг</div>
+                    </div>
+                </div>
+                <div class="progress-bar" style="margin-top: 8px;">
+                    <div class="progress-fill" style="width: ${c.progress}%"></div>
+                </div>
+            </div>`;
+        });
+        document.getElementById('clientsList').innerHTML = html;
+        
+        let tableHtml = '';
+        clients.forEach(c => {
+            tableHtml += `<tr>
+                <td><strong>${c.name}</strong></td>
+                <td>${c.goal}</td>
+                <td>${c.stats.weight}кг</td>
+                <td>${c.progress}%</td>
+                <td>${c.notesCount || 0}</td>
+            </tr>`;
+        });
+        document.getElementById('clientsTable').innerHTML = tableHtml;
+    } catch (e) { log('Error: ' + e); }
+}
+
+async function drawProgressChart() {
+    try {
+        const res = await fetch('/api/clients');
+        const clients = await res.json();
+        
+        const ctx = document.getElementById('progressChart');
+        if (!ctx) return;
+        
+        if (chartInstances.progress) chartInstances.progress.destroy();
+        
+        chartInstances.progress = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: clients.map(c => c.name),
+                datasets: [{
+                    label: 'Прогресс (%)',
+                    data: clients.map(c => c.progress),
+                    backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, max: 100 } }
             }
-        } catch (error) {
-            showMessage('Ошибка подключения', 'error');
+        });
+    } catch (e) { log('Error: ' + e); }
+}
+
+async function showClientUI(name) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('clientDashboard').classList.remove('hidden');
+    document.getElementById('clientTitle').textContent = '💪 ' + name;
+    
+    try {
+        const res = await fetch(`/api/client/${currentUser}`);
+        const client = await res.json();
+        document.getElementById('clientWeight').textContent = client.stats.weight + 'кг';
+        document.getElementById('clientFat').textContent = client.stats.bodyFat + '%';
+        document.getElementById('clientProgress').textContent = client.progress + '%';
+        document.getElementById('clientGoalText').textContent = client.goal;
+        document.getElementById('clientGoalDetails').textContent = client.goalDetails || '-';
+        document.getElementById('progressBarFill').style.width = client.progress + '%';
+        document.getElementById('progressPercent').textContent = client.progress;
+        
+        document.getElementById('goalSelect').value = client.goal;
+        document.getElementById('goalDetails').value = client.goalDetails || '';
+    } catch (e) { log('Error: ' + e); }
+}
+
+async function setGoal() {
+    const goal = document.getElementById('goalSelect').value;
+    const details = document.getElementById('goalDetails').value;
+    
+    try {
+        const res = await fetch(`/api/goal/${currentUser}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ goal, details })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('Цель обновлена!');
+            document.getElementById('clientGoalText').textContent = goal;
+            document.getElementById('clientGoalDetails').textContent = details;
         }
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function recordWeight() {
+    const value = document.getElementById('weightInput').value;
+    if (!value) {
+        showMessage('Введите вес', 'error');
+        return;
     }
-    async function loadClients() {
-        try {
-            const response = await fetch('/api/clients');
-            const clients = await response.json();
-            const select = document.getElementById('clientSelect');
-            select.innerHTML = '<option value="">-- Выберите --</option>';
-            clients.forEach(client => {
-                const option = document.createElement('option');
-                option.value = client.id;
-                option.textContent = client.name;
-                select.appendChild(option);
-            });
-        } catch (error) { }
-    }
-    async function loginClient() {
-        const clientId = document.getElementById('clientSelect').value;
-        if (!clientId) {
-            showMessage('Выберите профиль', 'error');
-            return;
+    
+    try {
+        const res = await fetch('/api/weight', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId: currentUser, value })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('Вес записан!');
+            document.getElementById('weightInput').value = '';
+            document.getElementById('clientWeight').textContent = value + 'кг';
+            loadWeights();
         }
-        try {
-            const response = await fetch('/api/login/client', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ clientId })
-            });
-            const data = await response.json();
-            if (data.success) {
-                currentUser = clientId;
-                showClientDashboard(data.name);
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function loadWeights() {
+    try {
+        const res = await fetch(`/api/weights/${currentUser}`);
+        const data = await res.json();
+        window.weightData = data.weights;
+        drawWeightChart();
+    } catch (e) { log('Error: ' + e); }
+}
+
+function drawWeightChart() {
+    try {
+        const ctx = document.getElementById('weightChart');
+        if (!ctx || !window.weightData) return;
+        
+        if (chartInstances.weight) chartInstances.weight.destroy();
+        
+        chartInstances.weight = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: window.weightData.map(w => w.date),
+                datasets: [{
+                    label: 'Вес (кг)',
+                    data: window.weightData.map(w => w.value),
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
             }
-        } catch (error) {
-            showMessage('Ошибка подключения', 'error');
+        });
+    } catch (e) { log('Error: ' + e); }
+}
+
+function loadExercises() {
+    const type = document.getElementById('workoutType').value;
+    const exList = document.getElementById('exercisesList');
+    selectedExercises = [];
+    
+    exList.innerHTML = (exercises[type] || []).map(ex => 
+        `<div class="exercise-item" onclick="toggleExercise('${ex}', this)">
+            <span>${ex}</span>
+            <input type="checkbox" style="cursor: pointer;">
+        </div>`
+    ).join('');
+}
+
+function toggleExercise(name, el) {
+    el.classList.toggle('selected');
+    if (el.classList.contains('selected')) {
+        selectedExercises.push(name);
+    } else {
+        selectedExercises = selectedExercises.filter(e => e !== name);
+    }
+}
+
+function selectWorkout(type) {
+    document.getElementById('workoutType').value = type;
+    document.querySelectorAll('.workout-template').forEach(btn => btn.classList.remove('selected'));
+    event.target.closest('.workout-template').classList.add('selected');
+    loadExercises();
+}
+
+async function addMeal() {
+    const name = document.getElementById('mealName').value;
+    const cal = parseInt(document.getElementById('mealCalories').value) || 0;
+    const prot = parseInt(document.getElementById('mealProteins').value) || 0;
+    const fat = parseInt(document.getElementById('mealFats').value) || 0;
+    const carb = parseInt(document.getElementById('mealCarbs').value) || 0;
+    
+    if (!name) { showMessage('Введите блюдо', 'error'); return; }
+    
+    try {
+        const res = await fetch('/api/meal', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId: currentUser, name, calories: cal, proteins: prot, fats: fat, carbs: carb })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('Прием пищи добавлен!');
+            document.getElementById('mealName').value = '';
+            document.getElementById('mealCalories').value = '';
+            document.getElementById('mealProteins').value = '';
+            document.getElementById('mealFats').value = '';
+            document.getElementById('mealCarbs').value = '';
+            loadMeals();
         }
-    }
-    async function showTrainerDashboard() {
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('trainerDashboard').classList.remove('hidden');
-        try {
-            const response = await fetch('/api/clients');
-            const clientsList = await response.json();
-            let html = '';
-            clientsList.forEach(client => {
-                html += `<div class="card"><div><strong>${client.name}</strong></div><div style="font-size: 12px; margin-top: 8px;">Цель: ${client.goal}</div><div style="font-size: 12px; margin-top: 4px;">Прогресс: ${client.progress}% | Вес: ${client.stats.weight}кг</div></div>`;
-            });
-            document.getElementById('trainerContent').innerHTML = html;
-        } catch (error) { }
-    }
-    async function showClientDashboard(name) {
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('clientDashboard').classList.remove('hidden');
-        document.getElementById('clientName').textContent = `💪 ${name}`;
-        try {
-            const response = await fetch(`/api/client/${currentUser}`);
-            const client = await response.json();
-            let html = `<div class="card"><div class="card-label">Текущий вес</div><div class="card-value">${client.stats.weight}кг</div></div><div class="card"><div class="card-label">Ваша цель</div><div style="font-size: 18px; font-weight: 600;">${client.goal}</div><div style="font-size: 14px; margin-top: 8px;">Прогресс: ${client.progress}%</div></div><div class="success">✅ Приложение работает!</div>`;
-            document.getElementById('clientContent').innerHTML = html;
-        } catch (error) { }
-    }
-    function logout() {
-        currentUser = null;
-        document.getElementById('loginScreen').classList.remove('hidden');
-        document.getElementById('trainerDashboard').classList.add('hidden');
-        document.getElementById('clientDashboard').classList.add('hidden');
-    }
-    window.addEventListener('load', () => loadClients());
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function loadMeals() {
+    try {
+        const res = await fetch(`/api/client/${currentUser}`);
+        const client = await res.json();
+        const html = client.meals.length > 0 
+            ? client.meals.map(m => `<tr><td><strong>${m.name}</strong></td><td>${m.calories}ккал</td><td>${m.proteins}/${m.fats}/${m.carbs}</td></tr>`).join('')
+            : '<tr><td colspan="3" style="text-align: center; color: #999;">Нет данных</td></tr>';
+        document.getElementById('mealsList').innerHTML = html;
+    } catch (e) { log('Error: ' + e); }
+}
+
+async function addWorkout() {
+    const type = document.getElementById('workoutType').value;
+    const dur = parseInt(document.getElementById('workoutDuration').value) || 0;
+    const int = document.getElementById('workoutIntensity').value;
+    
+    if (!dur) { showMessage('Введите длительность', 'error'); return; }
+    
+    try {
+        const res = await fetch('/api/workout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId: currentUser, type, duration: dur, intensity: int, exercises: selectedExercises })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('Тренировка добавлена! Сожжено ' + data.workout.calories + ' ккал');
+            document.getElementById('workoutDuration').value = '';
+            selectedExercises = [];
+            loadWorkouts();
+            loadExercises();
+        }
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function loadWorkouts() {
+    try {
+        const res = await fetch(`/api/client/${currentUser}`);
+        const client = await res.json();
+        const html = client.workouts.length > 0 
+            ? client.workouts.map(w => `<tr><td>${w.type}</td><td>${w.date}</td><td>${w.duration}мин</td><td>${w.intensity}</td></tr>`).join('')
+            : '<tr><td colspan="4" style="text-align: center; color: #999;">Нет данных</td></tr>';
+        document.getElementById('workoutsList').innerHTML = html;
+    } catch (e) { log('Error: ' + e); }
+}
+
+async function addNote() {
+    const text = document.getElementById('noteText').value;
+    if (!text) { showMessage('Напишите заметку', 'error'); return; }
+    
+    try {
+        const res = await fetch('/api/note', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId: currentUser, text })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('Заметка добавлена!');
+            document.getElementById('noteText').value = '';
+            loadNotes();
+        }
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function loadNotes() {
+    try {
+        const res = await fetch(`/api/client/${currentUser}`);
+        const client = await res.json();
+        const html = (client.notes || []).length > 0
+            ? client.notes.map(n => `<div class="note-item">
+                <div>${n.text}<div class="note-date">${n.date.split('T')[0]}</div></div>
+                <button class="btn-small" onclick="deleteNote(${n.id})">✕</button>
+            </div>`).join('')
+            : '<div class="empty-state"><div class="empty-state-icon">📝</div><p>Нет заметок</p></div>';
+        document.getElementById('notesList').innerHTML = html;
+    } catch (e) { log('Error: ' + e); }
+}
+
+async function deleteNote(noteId) {
+    try {
+        const res = await fetch(`/api/note/${currentUser}/${noteId}`, { method: 'DELETE' });
+        if (res.ok) {
+            showMessage('Заметка удалена');
+            loadNotes();
+        }
+    } catch (e) { log('Error: ' + e); }
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('trainerDashboard').classList.add('hidden');
+    document.getElementById('clientDashboard').classList.add('hidden');
+    document.getElementById('pinInput').value = '';
+    Object.values(chartInstances).forEach(chart => chart?.destroy?.());
+    chartInstances = {};
+}
+
+loadClientsForLogin();
+loadWeights();
 </script>
+
 </body>
 </html>
