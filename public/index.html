@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitTrack</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: white; }
+        .container { width: 100%; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .content { width: 100%; max-width: 400px; text-align: center; }
+        .logo { font-size: 48px; margin-bottom: 20px; }
+        h1 { font-size: 24px; margin-bottom: 10px; }
+        p { font-size: 14px; color: #666; margin-bottom: 30px; }
+        .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+        button { padding: 15px; font-size: 14px; font-weight: 600; border: 2px solid #e0e0e0; border-radius: 8px; background: white; cursor: pointer; }
+        button.active { border-color: #0088cc; background: #0088cc; color: white; }
+        .form-group { margin-bottom: 16px; text-align: left; }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+        input, select { width: 100%; padding: 12px; font-size: 16px; border: 1px solid #e0e0e0; border-radius: 8px; }
+        .btn-login { width: 100%; padding: 12px; font-size: 16px; font-weight: 600; border: none; border-radius: 8px; background: #0088cc; color: white; cursor: pointer; margin-top: 10px; }
+        .hidden { display: none; }
+        .dashboard { width: 100%; max-width: 600px; padding: 20px; background: white; border-radius: 12px; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #e0e0e0; }
+        .card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 16px; text-align: center; }
+        .card-label { font-size: 12px; opacity: 0.8; }
+        .card-value { font-size: 32px; font-weight: 700; margin-top: 8px; }
+        .success { background: #d4edda; color: #155724; padding: 12px; border-radius: 8px; margin-bottom: 16px; }
+        .error { background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="content">
+        <div id="loginScreen">
+            <div class="logo">💪</div>
+            <h1>FitTrack</h1>
+            <p>Управление клиентами</p>
+            <div class="buttons">
+                <button id="btnTrainer" onclick="selectRole('trainer')" class="active">👨‍🏫 Тренер</button>
+                <button id="btnClient" onclick="selectRole('client')">💪 Клиент</button>
+            </div>
+            <div id="trainerForm">
+                <div class="form-group">
+                    <label>Пин-код</label>
+                    <input type="password" id="pinInput" placeholder="1234" maxlength="4">
+                </div>
+                <button class="btn-login" onclick="loginTrainer()">Вход</button>
+                <p style="font-size: 11px; color: #999; margin-top: 12px;">Пин по умолчанию: 1234</p>
+            </div>
+            <div id="clientForm" class="hidden">
+                <div class="form-group">
+                    <label>Выберите профиль</label>
+                    <select id="clientSelect">
+                        <option value="">-- Загрузка --</option>
+                    </select>
+                </div>
+                <button class="btn-login" onclick="loginClient()">Вход</button>
+            </div>
+            <div id="message"></div>
+        </div>
+        <div id="trainerDashboard" class="hidden">
+            <div class="navbar">
+                <h2>👨‍🏫 Админ-панель</h2>
+                <button onclick="logout()" style="background: none; border: none; font-size: 20px; cursor: pointer;">🚪</button>
+            </div>
+            <div id="trainerContent"></div>
+        </div>
+        <div id="clientDashboard" class="hidden">
+            <div class="navbar">
+                <h2 id="clientName">💪 Клиент</h2>
+                <button onclick="logout()" style="background: none; border: none; font-size: 20px; cursor: pointer;">🚪</button>
+            </div>
+            <div id="clientContent"></div>
+        </div>
+    </div>
+</div>
+<script>
+    let currentRole = 'trainer';
+    let currentUser = null;
+    function selectRole(role) {
+        currentRole = role;
+        document.getElementById('btnTrainer').classList.toggle('active', role === 'trainer');
+        document.getElementById('btnClient').classList.toggle('active', role === 'client');
+        document.getElementById('trainerForm').classList.toggle('hidden', role === 'client');
+        document.getElementById('clientForm').classList.toggle('hidden', role === 'trainer');
+        if (role === 'client') loadClients();
+    }
+    function showMessage(text, type = 'success') {
+        const msg = document.getElementById('message');
+        msg.className = type;
+        msg.textContent = text;
+        setTimeout(() => msg.style.display = 'none', 3000);
+    }
+    async function loginTrainer() {
+        const pin = document.getElementById('pinInput').value;
+        try {
+            const response = await fetch('/api/login/trainer', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pin })
+            });
+            const data = await response.json();
+            if (data.success) {
+                currentUser = 'trainer';
+                showTrainerDashboard();
+            } else {
+                showMessage(data.message || 'Ошибка входа', 'error');
+            }
+        } catch (error) {
+            showMessage('Ошибка подключения', 'error');
+        }
+    }
+    async function loadClients() {
+        try {
+            const response = await fetch('/api/clients');
+            const clients = await response.json();
+            const select = document.getElementById('clientSelect');
+            select.innerHTML = '<option value="">-- Выберите --</option>';
+            clients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client.id;
+                option.textContent = client.name;
+                select.appendChild(option);
+            });
+        } catch (error) { }
+    }
+    async function loginClient() {
+        const clientId = document.getElementById('clientSelect').value;
+        if (!clientId) {
+            showMessage('Выберите профиль', 'error');
+            return;
+        }
+        try {
+            const response = await fetch('/api/login/client', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ clientId })
+            });
+            const data = await response.json();
+            if (data.success) {
+                currentUser = clientId;
+                showClientDashboard(data.name);
+            }
+        } catch (error) {
+            showMessage('Ошибка подключения', 'error');
+        }
+    }
+    async function showTrainerDashboard() {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('trainerDashboard').classList.remove('hidden');
+        try {
+            const response = await fetch('/api/clients');
+            const clientsList = await response.json();
+            let html = '';
+            clientsList.forEach(client => {
+                html += `<div class="card"><div><strong>${client.name}</strong></div><div style="font-size: 12px; margin-top: 8px;">Цель: ${client.goal}</div><div style="font-size: 12px; margin-top: 4px;">Прогресс: ${client.progress}% | Вес: ${client.stats.weight}кг</div></div>`;
+            });
+            document.getElementById('trainerContent').innerHTML = html;
+        } catch (error) { }
+    }
+    async function showClientDashboard(name) {
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('clientDashboard').classList.remove('hidden');
+        document.getElementById('clientName').textContent = `💪 ${name}`;
+        try {
+            const response = await fetch(`/api/client/${currentUser}`);
+            const client = await response.json();
+            let html = `<div class="card"><div class="card-label">Текущий вес</div><div class="card-value">${client.stats.weight}кг</div></div><div class="card"><div class="card-label">Ваша цель</div><div style="font-size: 18px; font-weight: 600;">${client.goal}</div><div style="font-size: 14px; margin-top: 8px;">Прогресс: ${client.progress}%</div></div><div class="success">✅ Приложение работает!</div>`;
+            document.getElementById('clientContent').innerHTML = html;
+        } catch (error) { }
+    }
+    function logout() {
+        currentUser = null;
+        document.getElementById('loginScreen').classList.remove('hidden');
+        document.getElementById('trainerDashboard').classList.add('hidden');
+        document.getElementById('clientDashboard').classList.add('hidden');
+    }
+    window.addEventListener('load', () => loadClients());
+</script>
+</body>
+</html>

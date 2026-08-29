@@ -1,0 +1,48 @@
+{
+  "clients": [
+    {
+      "id": 1,
+      "name": "Иван Петров",
+      "telegram_id": null,
+      "goal": "Набор мышечной массы",
+      "progress": 75,
+      "stats": {
+        "weight": 85,
+        "bodyFat": 18
+      }
+    },
+    {
+      "id": 2,
+      "name": "Мария Сидорова",
+      "telegram_id": null,
+      "goal": "Похудение",
+      "progress": 60,
+      "stats": {
+        "weight": 72,
+        "bodyFat": 28
+      }
+    },
+    {
+      "id": 3,
+      "name": "Петр Иванов",
+      "telegram_id": null,
+      "goal": "Выносливость",
+      "progress": 45,
+      "stats": {
+        "weight": 78,
+        "bodyFat": 22
+      }
+    }
+  ],
+  "meals": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "workouts": {
+    "1": [],
+    "2": [],
+    "3": []
+  },
+  "trainers": []
+}
