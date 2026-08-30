@@ -9,17 +9,16 @@ const app = express();
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: false,
     allowedHeaders: ['Content-Type']
 }));
 app.use(express.json());
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TRAINER_PIN = process.env.TRAINER_PIN || '1234';
-const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
 
 const DB_PATH = path.join(__dirname, 'data.json');
 
-// Инициализация БД
 function initDB() {
     if (!fs.existsSync(DB_PATH)) {
         const defaultData = {
@@ -27,6 +26,8 @@ function initDB() {
                 {
                     id: 1,
                     name: 'Иван Петров',
+                    username: 'ivan',
+                    password: '1234',
                     telegram_id: null,
                     goal: 'Набор мышечной массы',
                     goalDetails: 'Хочу набрать 10кг чистой массы за 3 месяца',
@@ -34,40 +35,13 @@ function initDB() {
                     stats: { weight: 85, bodyFat: 18 },
                     notes: [],
                     weights: [{ date: new Date().toISOString().split('T')[0], value: 85 }]
-                },
-                {
-                    id: 2,
-                    name: 'Мария Сидорова',
-                    telegram_id: null,
-                    goal: 'Похудение',
-                    goalDetails: 'Похудеть на 15кг здоровым способом',
-                    progress: 60,
-                    stats: { weight: 72, bodyFat: 28 },
-                    notes: [],
-                    weights: [{ date: new Date().toISOString().split('T')[0], value: 72 }]
-                },
-                {
-                    id: 3,
-                    name: 'Петр Иванов',
-                    telegram_id: null,
-                    goal: 'Выносливость',
-                    goalDetails: 'Подготовиться к полумарафону',
-                    progress: 45,
-                    stats: { weight: 78, bodyFat: 22 },
-                    notes: [],
-                    weights: [{ date: new Date().toISOString().split('T')[0], value: 78 }]
                 }
             ],
-            meals: {},
-            workouts: {},
+            meals: { 1: [] },
+            workouts: { 1: [] },
+            announcements: [],
             trainers: []
         };
-
-        defaultData.clients.forEach(client => {
-            defaultData.meals[client.id] = [];
-            defaultData.workouts[client.id] = [];
-        });
-
         fs.writeFileSync(DB_PATH, JSON.stringify(defaultData, null, 2));
     }
 }
@@ -82,9 +56,8 @@ function saveDB(data) {
 
 initDB();
 
-// ============ API Routes ============
+// ============ Вход ============
 
-// Вход
 app.post('/api/login/trainer', (req, res) => {
     if (req.body.pin === TRAINER_PIN) {
         res.json({ success: true, userType: 'trainer', message: 'Добро пожаловать!' });
@@ -94,16 +67,19 @@ app.post('/api/login/trainer', (req, res) => {
 });
 
 app.post('/api/login/client', (req, res) => {
+    const { username, password } = req.body;
     const db = loadDB();
-    const client = db.clients.find(c => c.id == req.body.clientId);
+    const client = db.clients.find(c => c.username === username && c.password === password);
+    
     if (client) {
         res.json({ success: true, userType: 'client', clientId: client.id, name: client.name });
     } else {
-        res.status(404).json({ success: false, message: 'Клиент не найден' });
+        res.status(401).json({ success: false, message: 'Неверные логин или пароль' });
     }
 });
 
-// Клиенты
+// ============ Клиенты ============
+
 app.get('/api/clients', (req, res) => {
     const db = loadDB();
     const clientsWithStats = db.clients.map(client => ({
@@ -129,7 +105,59 @@ app.get('/api/client/:clientId', (req, res) => {
     }
 });
 
-// Питание
+app.post('/api/create-client', (req, res) => {
+    const { name, username, password, goal, goalDetails } = req.body;
+    const db = loadDB();
+    
+    if (!name || !username || !password) {
+        return res.status(400).json({ success: false, message: 'Заполните все поля' });
+    }
+    
+    if (db.clients.find(c => c.username === username)) {
+        return res.status(400).json({ success: false, message: 'Этот логин уже используется' });
+    }
+    
+    const newId = Math.max(...db.clients.map(c => c.id), 0) + 1;
+    const newClient = {
+        id: newId,
+        name,
+        username,
+        password,
+        telegram_id: null,
+        goal: goal || 'Без цели',
+        goalDetails: goalDetails || '',
+        progress: 0,
+        stats: { weight: 0, bodyFat: 0 },
+        notes: [],
+        weights: []
+    };
+    
+    db.clients.push(newClient);
+    db.meals[newId] = [];
+    db.workouts[newId] = [];
+    saveDB(db);
+    
+    res.json({ success: true, client: newClient, message: 'Клиент добавлен!' });
+});
+
+app.delete('/api/client/:clientId', (req, res) => {
+    const db = loadDB();
+    const index = db.clients.findIndex(c => c.id == req.params.clientId);
+    
+    if (index !== -1) {
+        const clientId = db.clients[index].id;
+        db.clients.splice(index, 1);
+        delete db.meals[clientId];
+        delete db.workouts[clientId];
+        saveDB(db);
+        res.json({ success: true, message: 'Клиент удален!' });
+    } else {
+        res.status(404).json({ success: false, message: 'Клиент не найден' });
+    }
+});
+
+// ============ Питание ============
+
 app.post('/api/meal', (req, res) => {
     const { clientId, name, calories, proteins, fats, carbs } = req.body;
     const db = loadDB();
@@ -149,11 +177,11 @@ app.post('/api/meal', (req, res) => {
     
     db.meals[clientId].push(meal);
     saveDB(db);
-    
     res.json({ success: true, meal, message: 'Прием пищи добавлен!' });
 });
 
-// Тренировки
+// ============ Тренировки ============
+
 app.post('/api/workout', (req, res) => {
     const { clientId, type, duration, intensity, exercises } = req.body;
     const db = loadDB();
@@ -173,11 +201,11 @@ app.post('/api/workout', (req, res) => {
     
     db.workouts[clientId].push(workout);
     saveDB(db);
-    
     res.json({ success: true, workout, message: 'Тренировка добавлена!' });
 });
 
-// Вес
+// ============ Вес ============
+
 app.post('/api/weight', (req, res) => {
     const { clientId, value } = req.body;
     const db = loadDB();
@@ -207,7 +235,39 @@ app.get('/api/weights/:clientId', (req, res) => {
     }
 });
 
-// Заметки
+// ============ Цели и прогресс ============
+
+app.post('/api/goal/:clientId', (req, res) => {
+    const { goal, details } = req.body;
+    const db = loadDB();
+    const client = db.clients.find(c => c.id == req.params.clientId);
+    
+    if (client) {
+        client.goal = goal;
+        client.goalDetails = details;
+        saveDB(db);
+        res.json({ success: true, message: 'Цель обновлена!' });
+    } else {
+        res.status(404).json({ error: 'Client not found' });
+    }
+});
+
+app.post('/api/progress/:clientId', (req, res) => {
+    const { progress } = req.body;
+    const db = loadDB();
+    const client = db.clients.find(c => c.id == req.params.clientId);
+    
+    if (client) {
+        client.progress = Math.min(100, Math.max(0, parseInt(progress) || 0));
+        saveDB(db);
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: 'Client not found' });
+    }
+});
+
+// ============ Заметки ============
+
 app.post('/api/note', (req, res) => {
     const { clientId, text } = req.body;
     const db = loadDB();
@@ -240,38 +300,51 @@ app.delete('/api/note/:clientId/:noteId', (req, res) => {
     }
 });
 
-// Цель
-app.post('/api/goal/:clientId', (req, res) => {
-    const { goal, details } = req.body;
+// ============ Объявления ============
+
+app.get('/api/announcements', (req, res) => {
     const db = loadDB();
-    const client = db.clients.find(c => c.id == req.params.clientId);
-    
-    if (client) {
-        client.goal = goal;
-        client.goalDetails = details;
-        saveDB(db);
-        res.json({ success: true, message: 'Цель обновлена!' });
-    } else {
-        res.status(404).json({ error: 'Client not found' });
-    }
+    res.json(db.announcements || []);
 });
 
-// Прогресс
-app.post('/api/progress/:clientId', (req, res) => {
-    const { progress } = req.body;
+app.post('/api/announcement', (req, res) => {
+    const { text } = req.body;
     const db = loadDB();
-    const client = db.clients.find(c => c.id == req.params.clientId);
     
-    if (client) {
-        client.progress = Math.min(100, Math.max(0, parseInt(progress) || 0));
+    if (!text) {
+        return res.status(400).json({ success: false, message: 'Текст не может быть пустым' });
+    }
+    
+    if (!db.announcements) db.announcements = [];
+    
+    const announcement = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        text
+    };
+    
+    db.announcements.unshift(announcement);
+    saveDB(db);
+    res.json({ success: true, announcement, message: 'Объявление добавлено!' });
+});
+
+app.delete('/api/announcement/:id', (req, res) => {
+    const db = loadDB();
+    
+    if (!db.announcements) db.announcements = [];
+    
+    const index = db.announcements.findIndex(a => a.id == req.params.id);
+    if (index !== -1) {
+        db.announcements.splice(index, 1);
         saveDB(db);
         res.json({ success: true });
     } else {
-        res.status(404).json({ error: 'Client not found' });
+        res.status(404).json({ error: 'Not found' });
     }
 });
 
-// HTML
+// ============ Статические файлы ============
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
