@@ -373,6 +373,108 @@ app.get('/api/activity/:date', (req, res) => {
     res.json({ date, activity });
 });
 
+// ============ План тренировок ============
+
+app.post('/api/plan/:clientId', (req, res) => {
+    const { clientId } = req.params;
+    const { plan } = req.body;
+    const db = loadDB();
+    
+    if (!db.plans) db.plans = {};
+    
+    db.plans[clientId] = {
+        clientId,
+        plan,
+        createdAt: new Date().toISOString(),
+        progress: {}
+    };
+    
+    saveDB(db);
+    res.json({ success: true, message: 'План сохранён!' });
+});
+
+app.get('/api/plan/:clientId', (req, res) => {
+    const { clientId } = req.params;
+    const db = loadDB();
+    
+    if (!db.plans) db.plans = {};
+    
+    const plan = db.plans[clientId] || null;
+    res.json(plan);
+});
+
+// Отметить упражнение как выполненное
+app.post('/api/workout-progress', (req, res) => {
+    const { clientId, day, exerciseIndex, completed } = req.body;
+    const db = loadDB();
+    
+    if (!db.plans) db.plans = {};
+    if (!db.plans[clientId]) db.plans[clientId] = { progress: {} };
+    if (!db.plans[clientId].progress[day]) db.plans[clientId].progress[day] = {};
+    
+    db.plans[clientId].progress[day][exerciseIndex] = completed;
+    saveDB(db);
+    res.json({ success: true });
+});
+
+// Комментарий к дню
+app.post('/api/plan-comment', (req, res) => {
+    const { clientId, day, text } = req.body;
+    const db = loadDB();
+    
+    if (!db.planComments) db.planComments = {};
+    if (!db.planComments[clientId]) db.planComments[clientId] = {};
+    if (!db.planComments[clientId][day]) db.planComments[clientId][day] = [];
+    
+    db.planComments[clientId][day].push({
+        id: Date.now(),
+        date: new Date().toISOString(),
+        text
+    });
+    
+    saveDB(db);
+    res.json({ success: true });
+});
+
+app.get('/api/plan-comments/:clientId/:day', (req, res) => {
+    const { clientId, day } = req.params;
+    const db = loadDB();
+    
+    if (!db.planComments || !db.planComments[clientId] || !db.planComments[clientId][day]) {
+        return res.json([]);
+    }
+    
+    res.json(db.planComments[clientId][day]);
+});
+
+// Статистика прохождения
+app.get('/api/plan-stats/:clientId', (req, res) => {
+    const { clientId } = req.params;
+    const db = loadDB();
+    
+    if (!db.plans || !db.plans[clientId]) {
+        return res.json({ stats: {} });
+    }
+    
+    const plan = db.plans[clientId];
+    const stats = {};
+    const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    
+    days.forEach(day => {
+        if (plan.plan && plan.plan[day]) {
+            const exercises = plan.plan[day];
+            const completed = plan.progress[day] ? Object.values(plan.progress[day]).filter(c => c).length : 0;
+            stats[day] = {
+                total: exercises.length,
+                completed: completed,
+                percent: Math.round((completed / exercises.length) * 100) || 0
+            };
+        }
+    });
+    
+    res.json({ stats });
+});
+
 // ============ Статические файлы ============
 
 app.get('/', (req, res) => {

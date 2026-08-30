@@ -4,40 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FitTrack Pro</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27;
+            color: #e0e0e0;
             min-height: 100vh;
         }
 
         .app { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* Login */
         .login-screen {
             flex: 1;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
         }
 
         .login-box {
             width: 100%;
             max-width: 450px;
-            background: white;
+            background: #1a1f3a;
             padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border-radius: 12px;
+            border: 1px solid #2d3a5c;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
 
         .logo { font-size: 64px; text-align: center; margin-bottom: 12px; }
-        .login-box h1 { font-size: 28px; text-align: center; margin-bottom: 8px; color: #333; }
-        .login-box > p { font-size: 14px; text-align: center; color: #666; margin-bottom: 30px; }
+        .login-box h1 { font-size: 28px; text-align: center; margin-bottom: 8px; color: #fff; }
+        .login-box > p { font-size: 14px; text-align: center; color: #a0a0a0; margin-bottom: 30px; }
 
         .role-buttons {
             display: grid;
@@ -48,20 +48,21 @@
 
         .role-btn {
             padding: 16px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 12px;
+            border: 2px solid #2d3a5c;
+            background: #0f1628;
+            border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
+            color: #a0a0a0;
             transition: all 0.3s;
         }
 
-        .role-btn:hover { border-color: #667eea; background: #f8f9ff; }
+        .role-btn:hover { border-color: #4a5fa7; background: #141d35; }
         .role-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a5fa7 0%, #2c3e5f 100%);
             color: white;
-            border-color: transparent;
+            border-color: #4a5fa7;
         }
 
         .form-group {
@@ -73,68 +74,73 @@
             font-size: 13px;
             font-weight: 600;
             margin-bottom: 8px;
-            color: #333;
+            color: #b0b0b0;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            border: 1px solid #2d3a5c;
+            background: #0f1628;
+            border-radius: 6px;
             font-size: 14px;
             font-family: inherit;
+            color: #e0e0e0;
             transition: all 0.2s;
         }
 
-        .form-group input:focus {
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
             outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: #4a5fa7;
+            background: #151f38;
         }
 
         .btn {
             width: 100%;
             padding: 12px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #4a5fa7 0%, #2c3e5f 100%);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
             transition: all 0.3s;
         }
 
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3); }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(74, 95, 167, 0.3); }
+        .btn-small { padding: 6px 12px; width: auto; background: #2d3a5c; }
 
         .hidden { display: none !important; }
 
-        /* Dashboard */
         .dashboard {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #f5f7fa;
+            background: #0a0e27;
         }
 
         .navbar {
-            background: white;
+            background: #1a1f3a;
             padding: 16px 20px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #2d3a5c;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
         }
 
-        .navbar h2 { font-size: 20px; color: #333; }
-        .logout-btn { padding: 8px 16px; background: #f0f0f0; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .navbar h2 { font-size: 20px; color: #fff; }
 
         .content {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             width: 100%;
         }
@@ -143,7 +149,7 @@
             display: flex;
             gap: 8px;
             margin-bottom: 20px;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 2px solid #2d3a5c;
             overflow-x: auto;
         }
 
@@ -154,125 +160,143 @@
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
-            color: #666;
+            color: #707080;
             border-bottom: 3px solid transparent;
             transition: all 0.2s;
             white-space: nowrap;
         }
 
         .tab-btn.active {
-            color: #667eea;
-            border-bottom-color: #667eea;
+            color: #4a5fa7;
+            border-bottom-color: #4a5fa7;
         }
 
         .section { margin-bottom: 24px; }
-        .section h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: #333; }
+        .section h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; color: #fff; }
 
         .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1a1f3a 0%, #242a42 100%);
+            border: 1px solid #2d3a5c;
             color: white;
             padding: 24px;
-            border-radius: 12px;
+            border-radius: 8px;
             margin-bottom: 16px;
             text-align: center;
-            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.2);
         }
 
-        .stat-label { font-size: 12px; opacity: 0.8; margin-bottom: 4px; }
-        .stat-value { font-size: 36px; font-weight: 700; }
+        .stat-label { font-size: 12px; opacity: 0.7; margin-bottom: 4px; }
+        .stat-value { font-size: 36px; font-weight: 700; color: #4a5fa7; }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 
         .card {
-            background: white;
+            background: #1a1f3a;
             padding: 16px;
-            border-radius: 12px;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            transition: all 0.2s;
+            border-radius: 8px;
+            border: 1px solid #2d3a5c;
+            margin-bottom: 12px;
         }
-
-        .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 
         .form-section {
-            background: white;
+            background: #1a1f3a;
             padding: 20px;
-            border-radius: 12px;
+            border-radius: 8px;
             margin-bottom: 16px;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #2d3a5c;
         }
 
-        .form-section h4 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #333; }
+        .form-section h4 { font-size: 16px; font-weight: 600; margin-bottom: 16px; color: #fff; }
 
         .message {
             padding: 12px 16px;
-            border-radius: 8px;
+            border-radius: 6px;
             margin-bottom: 16px;
             font-size: 13px;
             display: none;
         }
 
         .message.show { display: block; }
-        .message.success { background: #d4edda; color: #155724; }
-        .message.error { background: #f8d7da; color: #721c24; }
+        .message.success { background: #1d3a1d; color: #4ade80; border: 1px solid #2d5a2d; }
+        .message.error { background: #3a1d1d; color: #f87171; border: 1px solid #5a2d2d; }
 
-        .chat-box {
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            height: 400px;
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 16px;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .announcement {
-            background: #f8f9ff;
-            padding: 12px;
-            margin-bottom: 12px;
+        .day-card {
+            background: #1a1f3a;
+            border: 1px solid #2d3a5c;
             border-radius: 8px;
-            border-left: 4px solid #667eea;
+            padding: 16px;
+            margin-bottom: 12px;
         }
 
-        .announcement-text { font-size: 14px; margin-bottom: 4px; }
-        .announcement-date { font-size: 11px; color: #999; }
-        .announcement-delete { float: right; cursor: pointer; color: #999; }
-
-        .chat-input {
-            padding: 12px;
-            display: flex;
-            gap: 8px;
+        .day-title {
+            font-weight: 600;
+            color: #4a5fa7;
+            margin-bottom: 12px;
+            font-size: 16px;
         }
 
-        .chat-input textarea {
-            flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
+        .exercise-item {
+            background: #0f1628;
+            padding: 10px;
+            margin-bottom: 8px;
             border-radius: 6px;
-            font-family: inherit;
-            font-size: 13px;
-            resize: none;
-            height: 40px;
+            border-left: 3px solid #4a5fa7;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .chat-input .btn {
-            width: auto;
-            padding: 8px 16px;
-            white-space: nowrap;
+        .exercise-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #4a5fa7;
+        }
+
+        .exercise-item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .comment-box {
+            background: #0f1628;
+            border: 1px solid #2d3a5c;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+        }
+
+        .comment-item {
+            background: #1a1f3a;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            border-left: 2px solid #4a5fa7;
+        }
+
+        .comment-date { font-size: 10px; color: #707080; margin-top: 4px; }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #2d3a5c;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4a5fa7 0%, #2c3e5f 100%);
+            transition: width 0.3s;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            background: white;
+            background: #1a1f3a;
+            border: 1px solid #2d3a5c;
             border-radius: 8px;
             overflow: hidden;
         }
@@ -280,39 +304,30 @@
         table th {
             text-align: left;
             padding: 12px;
-            background: #f5f7fa;
-            border-bottom: 2px solid #e0e0e0;
+            background: #0f1628;
+            border-bottom: 1px solid #2d3a5c;
             font-size: 12px;
             font-weight: 600;
-            color: #666;
+            color: #a0a0a0;
         }
 
         table td {
             padding: 12px;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #2d3a5c;
             font-size: 13px;
         }
 
-        table tr:hover { background: #f8f9ff; }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #999;
-        }
+        .empty-state { text-align: center; padding: 40px 20px; color: #707080; }
 
         @media (max-width: 768px) {
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
-            .login-box { padding: 24px; }
-            .navbar { flex-direction: column; gap: 12px; }
-            .content { padding: 12px; }
         }
     </style>
 </head>
 <body>
 
 <div class="app">
-    <!-- LOGIN -->
+    <!-- LOGIN SCREEN -->
     <div id="loginScreen" class="login-screen">
         <div class="login-box">
             <div class="logo">💪</div>
@@ -330,7 +345,6 @@
                     <input type="password" id="pinInput" placeholder="••••" maxlength="4">
                 </div>
                 <button class="btn" onclick="loginTrainer()">Вход в админ-панель</button>
-                <p style="font-size: 11px; color: #999; text-align: center; margin-top: 12px;">Пин: 1234</p>
             </div>
             
             <div id="clientLoginForm" class="hidden">
@@ -352,18 +366,17 @@
     <!-- TRAINER DASHBOARD -->
     <div id="trainerDashboard" class="dashboard hidden">
         <div class="navbar">
-            <h2>👨‍🏫 Админ-панель</h2>
-            <button class="logout-btn" onclick="logout()">Выход</button>
+            <h2>👨‍🏫 Админ-панель FitTrack</h2>
+            <button class="logout-btn btn-small" onclick="logout()">Выход</button>
         </div>
         <div class="content">
             <div class="tabs">
-                <button class="tab-btn active" onclick="setTab('trainer', 'overview')">Обзор</button>
-                <button class="tab-btn" onclick="setTab('trainer', 'activity')">Активность</button>
-                <button class="tab-btn" onclick="setTab('trainer', 'clients')">Клиенты</button>
-                <button class="tab-btn" onclick="setTab('trainer', 'announcements')">Объявления</button>
+                <button class="tab-btn active" onclick="setTab('trainer', 'clients')">Клиенты</button>
+                <button class="tab-btn" onclick="setTab('trainer', 'plans')">Планы</button>
+                <button class="tab-btn" onclick="setTab('trainer', 'statistics')">Статистика</button>
             </div>
             
-            <div id="trainer-overview">
+            <div id="trainer-clients">
                 <div class="grid-3">
                     <div class="stat-card">
                         <div class="stat-label">Всего клиентов</div>
@@ -374,7 +387,7 @@
                         <div class="stat-value" id="avgProgress">0%</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Активных сегодня</div>
+                        <div class="stat-label">Активных</div>
                         <div class="stat-value" id="activeToday">0</div>
                     </div>
                 </div>
@@ -396,72 +409,38 @@
                                 <input type="password" id="newClientPassword" placeholder="••••" autocomplete="off">
                             </div>
                         </div>
-                        <div class="grid-2">
-                            <div class="form-group">
-                                <label>Цель</label>
-                                <select id="newClientGoal">
-                                    <option value="Набор мышечной массы">💪 Набор мышечной массы</option>
-                                    <option value="Похудение">🔥 Похудение</option>
-                                    <option value="Повышение выносливости">🏃 Повышение выносливости</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Текущий вес (кг)</label>
-                                <input type="number" id="newClientWeight" placeholder="80" step="0.1">
-                            </div>
-                        </div>
                         <button class="btn" onclick="createNewClient()">Добавить клиента ➕</button>
                     </div>
                 </div>
                 
                 <div class="section">
-                    <h3>Клиенты и их прогресс</h3>
+                    <h3>Клиенты</h3>
                     <div id="clientsList"></div>
                 </div>
             </div>
             
-            <div id="trainer-activity" class="hidden">
+            <div id="trainer-plans" class="hidden">
                 <div class="section">
-                    <h3>📅 Активность клиентов по датам</h3>
+                    <h3>Создать/Редактировать План</h3>
                     <div class="form-section">
                         <div class="form-group">
-                            <label>Выберите дату</label>
-                            <input type="date" id="activityDate" value="">
+                            <label>Выберите клиента</label>
+                            <select id="planClientSelect" onchange="loadClientPlan()"></select>
                         </div>
-                        <button class="btn" onclick="loadActivityByDate()">Показать активность 📊</button>
+                        
+                        <div id="planDays" style="display: none;">
+                            <h4 style="margin-top: 20px; margin-bottom: 12px; color: #fff;">План на неделю</h4>
+                            <div id="planEditorDays"></div>
+                            <button class="btn" style="margin-top: 16px;" onclick="savePlan()">Сохранить план 💾</button>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="section" id="activitySection" style="display: none;">
-                    <h3 id="activityDateTitle">Активность на дату</h3>
-                    <div id="activityList"></div>
                 </div>
             </div>
             
-            <div id="trainer-clients" class="hidden">
-                <table>
-                    <thead>
-                        <tr><th>Имя</th><th>Логин</th><th>Цель</th><th>Вес</th><th>Прогресс</th><th></th></tr>
-                    </thead>
-                    <tbody id="clientsTable"></tbody>
-                </table>
-            </div>
-            
-            <div id="trainer-announcements" class="hidden">
+            <div id="trainer-statistics" class="hidden">
                 <div class="section">
-                    <h3>Написать объявление</h3>
-                    <div class="form-section">
-                        <div class="form-group">
-                            <label>Текст объявления</label>
-                            <textarea id="announcementText" placeholder="Новое расписание, изменения, важная информация..." style="width: 100%; min-height: 80px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;"></textarea>
-                        </div>
-                        <button class="btn" onclick="sendAnnouncement()">Отправить объявление 📢</button>
-                    </div>
-                </div>
-                
-                <div class="section">
-                    <h3>Все объявления</h3>
-                    <div id="announcementsList"></div>
+                    <h3>Статистика клиентов</h3>
+                    <div id="statisticsContent"></div>
                 </div>
             </div>
         </div>
@@ -471,158 +450,24 @@
     <div id="clientDashboard" class="dashboard hidden">
         <div class="navbar">
             <h2 id="clientTitle">💪 Клиент</h2>
-            <button class="logout-btn" onclick="logout()">Выход</button>
+            <button class="logout-btn btn-small" onclick="logout()">Выход</button>
         </div>
         <div class="content">
             <div id="message" class="message"></div>
             
             <div class="tabs">
-                <button class="tab-btn active" onclick="setTab('client', 'profile')">Профиль</button>
-                <button class="tab-btn" onclick="setTab('client', 'goals')">Цели</button>
-                <button class="tab-btn" onclick="setTab('client', 'weight')">Вес</button>
-                <button class="tab-btn" onclick="setTab('client', 'meals')">Питание</button>
-                <button class="tab-btn" onclick="setTab('client', 'workouts')">Тренировки</button>
-                <button class="tab-btn" onclick="setTab('client', 'announcements')">Объявления</button>
+                <button class="tab-btn active" onclick="setTab('client', 'plan')">📅 Мой план</button>
+                <button class="tab-btn" onclick="setTab('client', 'stats')">📊 Статистика</button>
             </div>
             
-            <!-- Profile -->
-            <div id="client-profile">
-                <div class="grid-3">
-                    <div class="stat-card">
-                        <div class="stat-label">Текущий вес</div>
-                        <div class="stat-value" id="clientWeight">0</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">% жира</div>
-                        <div class="stat-value" id="clientFat">0%</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-label">Прогресс</div>
-                        <div class="stat-value" id="clientProgress">0%</div>
-                    </div>
-                </div>
-                <div class="section">
-                    <h3>Ваша цель</h3>
-                    <div class="card">
-                        <div style="font-weight: 600; font-size: 16px; margin-bottom: 8px;" id="clientGoalText">-</div>
-                        <div style="font-size: 13px; color: #666;" id="clientGoalDetails">-</div>
-                    </div>
-                </div>
+            <div id="client-plan">
+                <div id="clientPlanContent"></div>
             </div>
             
-            <!-- Goals -->
-            <div id="client-goals" class="hidden">
+            <div id="client-stats" class="hidden">
                 <div class="section">
-                    <div class="form-section">
-                        <h4>Установить/изменить цель</h4>
-                        <div class="form-group">
-                            <label>Основная цель</label>
-                            <select id="goalSelect">
-                                <option value="Набор мышечной массы">💪 Набор мышечной массы</option>
-                                <option value="Похудение">🔥 Похудение</option>
-                                <option value="Повышение выносливости">🏃 Повышение выносливости</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Описание цели</label>
-                            <textarea id="goalDetails" placeholder="Напишите подробно..." style="width: 100%; min-height: 100px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit;"></textarea>
-                        </div>
-                        <button class="btn" onclick="setGoal()">Сохранить цель</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Weight -->
-            <div id="client-weight" class="hidden">
-                <div class="section">
-                    <div class="form-section">
-                        <h4>Записать вес</h4>
-                        <div class="form-group">
-                            <label>Вес (кг)</label>
-                            <input type="number" id="weightInput" placeholder="75" step="0.1">
-                        </div>
-                        <button class="btn" onclick="recordWeight()">Записать</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Meals -->
-            <div id="client-meals" class="hidden">
-                <div class="section">
-                    <div class="form-section">
-                        <h4>Добавить прием пищи</h4>
-                        <div class="form-group">
-                            <label>Блюдо</label>
-                            <input type="text" id="mealName" placeholder="Курица с рисом">
-                        </div>
-                        <div class="grid-2">
-                            <div class="form-group">
-                                <label>Калории</label>
-                                <input type="number" id="mealCalories" placeholder="500">
-                            </div>
-                            <div class="form-group">
-                                <label>Белки (г)</label>
-                                <input type="number" id="mealProteins" placeholder="30">
-                            </div>
-                        </div>
-                        <button class="btn" onclick="addMeal()">Добавить 🍽️</button>
-                    </div>
-                    <div style="margin-top: 20px;">
-                        <h3>История</h3>
-                        <table>
-                            <thead><tr><th>Блюдо</th><th>Калории</th><th>Б/Ж/У</th></tr></thead>
-                            <tbody id="mealsList"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Workouts -->
-            <div id="client-workouts" class="hidden">
-                <div class="section">
-                    <div class="form-section">
-                        <h4>Добавить тренировку</h4>
-                        <div class="form-group">
-                            <label>Тип тренировки</label>
-                            <select id="workoutType">
-                                <option value="Кардио">🏃 Кардио</option>
-                                <option value="Силовая">💪 Силовая</option>
-                                <option value="Круговая">🔄 Круговая</option>
-                            </select>
-                        </div>
-                        <div class="grid-2">
-                            <div class="form-group">
-                                <label>Длительность (мин)</label>
-                                <input type="number" id="workoutDuration" placeholder="60">
-                            </div>
-                            <div class="form-group">
-                                <label>Интенсивность</label>
-                                <select id="workoutIntensity">
-                                    <option value="Низкая">Низкая</option>
-                                    <option value="Средняя" selected>Средняя</option>
-                                    <option value="Высокая">Высокая</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button class="btn" onclick="addWorkout()">Добавить тренировку 🏋️</button>
-                    </div>
-                    <div style="margin-top: 20px;">
-                        <h3>История</h3>
-                        <table>
-                            <thead><tr><th>Тип</th><th>Дата</th><th>Длит.</th></tr></thead>
-                            <tbody id="workoutsList"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Announcements -->
-            <div id="client-announcements" class="hidden">
-                <div class="section">
-                    <h3>Объявления от тренера</h3>
-                    <div class="chat-box">
-                        <div class="chat-messages" id="announcementsForClient"></div>
-                    </div>
+                    <h3>Ваша статистика прохождения</h3>
+                    <div id="clientStatsContent"></div>
                 </div>
             </div>
         </div>
@@ -633,15 +478,13 @@
 let currentRole = 'trainer';
 let currentTab = {};
 let currentUser = null;
-let chartInstances = {};
-
-function log(msg) { console.log('[FitTrack]', msg); }
+let currentClientForPlan = null;
 
 function showMessage(text, type = 'success') {
     const msg = document.getElementById('message');
     msg.className = 'message show ' + type;
     msg.textContent = text;
-    setTimeout(() => { msg.classList.remove('show'); }, 3000);
+    setTimeout(() => msg.classList.remove('show'), 3000);
 }
 
 function setRole(role) {
@@ -658,72 +501,11 @@ function setTab(view, tab) {
     document.querySelectorAll(`[id^="${view}-"]`).forEach(el => el.classList.add('hidden'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     event.target.classList.add('active');
-    const el = document.getElementById(`${view}-${tab}`);
-    if (el) el.classList.remove('hidden');
+    document.getElementById(`${view}-${tab}`).classList.remove('hidden');
     
-    if (view === 'client' && tab === 'announcements') loadAnnouncementsForClient();
-    if (view === 'trainer' && tab === 'announcements') loadAnnouncementsForTrainer();
-    if (view === 'trainer' && tab === 'activity') setDefaultDate();
-}
-
-function setDefaultDate() {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('activityDate').value = today;
-}
-
-async function loadActivityByDate() {
-    const date = document.getElementById('activityDate').value;
-    
-    if (!date) {
-        showMessage('Выберите дату', 'error');
-        return;
-    }
-    
-    try {
-        const res = await fetch(`/api/activity/${date}`);
-        const data = await res.json();
-        
-        document.getElementById('activityDateTitle').textContent = `📅 Активность на ${date}`;
-        
-        let html = '';
-        data.activity.forEach(client => {
-            if (client.stats.mealsCount > 0 || client.stats.workoutsCount > 0) {
-                html += `<div class="card" style="margin-bottom: 16px;">
-                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">${client.clientName}</div>
-                    
-                    <div style="margin-bottom: 12px;">
-                        <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">🍽️ Питание (${client.stats.mealsCount})</div>
-                        ${client.meals.length > 0 
-                            ? `<div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                                ${client.meals.map(m => `<div style="padding: 4px 0; font-size: 13px;">${m.time} - ${m.name} (${m.calories}ккал, Б${m.proteins}Ж${m.fats}У${m.carbs})</div>`).join('')}
-                            </div>`
-                            : '<div style="color: #999; font-size: 13px;">Нет записей</div>'
-                        }
-                    </div>
-                    
-                    <div>
-                        <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">🏋️ Тренировки (${client.stats.workoutsCount}, ${client.stats.totalDuration} мин)</div>
-                        ${client.workouts.length > 0 
-                            ? `<div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
-                                ${client.workouts.map(w => `<div style="padding: 4px 0; font-size: 13px;">${w.time} - ${w.type} (${w.duration}мин, ${w.intensity})</div>`).join('')}
-                            </div>`
-                            : '<div style="color: #999; font-size: 13px;">Нет записей</div>'
-                        }
-                    </div>
-                </div>`;
-            }
-        });
-        
-        if (html === '') {
-            html = '<div class="empty-state"><p>Нет активности на эту дату</p></div>';
-        }
-        
-        document.getElementById('activityList').innerHTML = html;
-        document.getElementById('activitySection').style.display = 'block';
-    } catch (e) {
-        showMessage('Ошибка при загрузке', 'error');
-        log('Error: ' + e);
-    }
+    if (view === 'trainer' && tab === 'plans') loadClientsForPlan();
+    if (view === 'trainer' && tab === 'statistics') loadStatistics();
+    if (view === 'client' && tab === 'stats') loadClientStats();
 }
 
 async function loginTrainer() {
@@ -737,7 +519,9 @@ async function loginTrainer() {
         const data = await res.json();
         if (data.success) {
             currentUser = 'trainer';
-            showTrainerUI();
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('trainerDashboard').classList.remove('hidden');
+            loadTrainerDashboard();
         } else {
             showMessage('Неверный пин-код', 'error');
         }
@@ -751,7 +535,7 @@ async function loginClient() {
     const password = document.getElementById('clientPassword').value;
     
     if (!username || !password) {
-        showMessage('Заполните логин и пароль', 'error');
+        showMessage('Введите логин и пароль', 'error');
         return;
     }
     
@@ -764,19 +548,16 @@ async function loginClient() {
         const data = await res.json();
         if (data.success) {
             currentUser = data.clientId;
-            showClientUI(data.name);
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('clientDashboard').classList.remove('hidden');
+            document.getElementById('clientTitle').textContent = '💪 ' + data.name;
+            loadClientPlanView();
         } else {
             showMessage('Неверные логин или пароль', 'error');
         }
     } catch (e) {
         showMessage('Ошибка подключения', 'error');
     }
-}
-
-async function showTrainerUI() {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('trainerDashboard').classList.remove('hidden');
-    loadTrainerDashboard();
 }
 
 async function loadTrainerDashboard() {
@@ -791,42 +572,29 @@ async function loadTrainerDashboard() {
         
         let html = '';
         clients.forEach(c => {
-            html += `<div class="card" style="margin-bottom: 12px;">
-                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div style="flex: 1;">
-                        <div style="font-weight: 600; font-size: 16px;">${c.name}</div>
-                        <div style="font-size: 12px; color: #666; margin-top: 4px;">Логин: ${c.username}</div>
+            html += `<div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-weight: 600; color: #fff;">${c.name}</div>
+                        <div style="font-size: 12px; color: #a0a0a0;">Логин: ${c.username} | ${c.goal}</div>
                     </div>
                     <div style="text-align: right;">
-                        <div style="font-size: 14px; font-weight: 600; color: #667eea;">${c.progress}%</div>
-                        <div style="font-size: 12px; color: #999;">Вес: ${c.stats.weight}кг</div>
+                        <div style="font-weight: 600; color: #4a5fa7; font-size: 16px;">${c.progress}%</div>
+                        <button class="btn-small" onclick="deleteClient(${c.id})">✕ Удалить</button>
                     </div>
-                    <button class="logout-btn" onclick="deleteClient(${c.id})" style="margin-left: 8px;">✕</button>
                 </div>
             </div>`;
         });
         document.getElementById('clientsList').innerHTML = html || '<div class="empty-state">Нет клиентов</div>';
-        
-        let tableHtml = '';
-        clients.forEach(c => {
-            tableHtml += `<tr>
-                <td><strong>${c.name}</strong></td>
-                <td>${c.username}</td>
-                <td>${c.goal}</td>
-                <td>${c.stats.weight}кг</td>
-                <td>${c.progress}%</td>
-                <td><button class="logout-btn" onclick="deleteClient(${c.id})">✕</button></td>
-            </tr>`;
-        });
-        document.getElementById('clientsTable').innerHTML = tableHtml;
-    } catch (e) { log('Error: ' + e); }
+    } catch (e) {
+        console.log('Error:', e);
+    }
 }
 
 async function createNewClient() {
     const name = document.getElementById('newClientName').value;
     const username = document.getElementById('newClientUsername').value;
     const password = document.getElementById('newClientPassword').value;
-    const goal = document.getElementById('newClientGoal').value;
     
     if (!name || !username || !password) {
         showMessage('Заполните все поля', 'error');
@@ -837,7 +605,7 @@ async function createNewClient() {
         const res = await fetch('/api/create-client', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, username, password, goal, goalDetails: '' })
+            body: JSON.stringify({ name, username, password, goal: 'Набор мышечной массы', goalDetails: '' })
         });
         const data = await res.json();
         if (data.success) {
@@ -855,8 +623,7 @@ async function createNewClient() {
 }
 
 async function deleteClient(clientId) {
-    if (!confirm('Удалить клиента? Это удалит все его данные!')) return;
-    
+    if (!confirm('Удалить клиента?')) return;
     try {
         const res = await fetch(`/api/client/${clientId}`, { method: 'DELETE' });
         if (res.ok) {
@@ -866,206 +633,215 @@ async function deleteClient(clientId) {
     } catch (e) { showMessage('Ошибка', 'error'); }
 }
 
-async function sendAnnouncement() {
-    const text = document.getElementById('announcementText').value;
-    if (!text) {
-        showMessage('Напишите объявление', 'error');
-        return;
-    }
-    
+async function loadClientsForPlan() {
     try {
-        const res = await fetch('/api/announcement', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text })
+        const res = await fetch('/api/clients');
+        const clients = await res.json();
+        
+        let html = '<option value="">-- Выберите клиента --</option>';
+        clients.forEach(c => {
+            html += `<option value="${c.id}">${c.name}</option>`;
         });
-        const data = await res.json();
-        if (data.success) {
-            showMessage('Объявление отправлено!');
-            document.getElementById('announcementText').value = '';
-            loadAnnouncementsForTrainer();
-        }
-    } catch (e) { showMessage('Ошибка', 'error'); }
+        document.getElementById('planClientSelect').innerHTML = html;
+    } catch (e) { console.log('Error:', e); }
 }
 
-async function loadAnnouncementsForTrainer() {
+async function loadClientPlan() {
+    const clientId = document.getElementById('planClientSelect').value;
+    if (!clientId) return;
+    
+    currentClientForPlan = clientId;
+    
     try {
-        const res = await fetch('/api/announcements');
-        const announcements = await res.json();
+        const res = await fetch(`/api/plan/${clientId}`);
+        const plan = await res.json();
         
+        const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
         let html = '';
-        announcements.forEach(a => {
-            const date = new Date(a.date).toLocaleString('ru-RU');
-            html += `<div class="announcement">
-                <div style="display: flex; justify-content: space-between;">
-                    <div class="announcement-text">${a.text}</div>
-                    <span class="announcement-delete" onclick="deleteAnnouncement(${a.id})">✕</span>
+        
+        days.forEach(day => {
+            const exercises = plan && plan.plan && plan.plan[day] ? plan.plan[day] : '';
+            html += `<div class="form-section">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label style="font-size: 16px; margin: 0; color: #4a5fa7; font-weight: 700;">${day}</label>
                 </div>
-                <div class="announcement-date">${date}</div>
+                <textarea id="day-${day}" placeholder="Упражнения для ${day}..." style="margin-top: 8px; min-height: 100px;">${exercises}</textarea>
             </div>`;
         });
-        document.getElementById('announcementsList').innerHTML = html || '<div class="empty-state">Нет объявлений</div>';
-    } catch (e) { log('Error: ' + e); }
+        
+        document.getElementById('planEditorDays').innerHTML = html;
+        document.getElementById('planDays').style.display = 'block';
+    } catch (e) { console.log('Error:', e); }
 }
 
-async function loadAnnouncementsForClient() {
+async function savePlan() {
+    if (!currentClientForPlan) {
+        showMessage('Выберите клиента', 'error');
+        return;
+    }
+    
+    const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    const plan = {};
+    
+    days.forEach(day => {
+        const text = document.getElementById(`day-${day}`).value;
+        plan[day] = text.split('\n').filter(e => e.trim());
+    });
+    
     try {
-        const res = await fetch('/api/announcements');
-        const announcements = await res.json();
+        const res = await fetch(`/api/plan/${currentClientForPlan}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('План сохранён! 💾');
+        }
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function loadStatistics() {
+    try {
+        const res = await fetch('/api/clients');
+        const clients = await res.json();
         
         let html = '';
-        announcements.forEach(a => {
-            const date = new Date(a.date).toLocaleString('ru-RU');
-            html += `<div class="announcement">
-                <div class="announcement-text">${a.text}</div>
-                <div class="announcement-date">${date}</div>
+        for (const client of clients) {
+            const statsRes = await fetch(`/api/plan-stats/${client.id}`);
+            const statsData = await statsRes.json();
+            const stats = statsData.stats;
+            
+            let statsHtml = '<div style="margin-top: 12px;">';
+            Object.entries(stats).forEach(([day, data]) => {
+                statsHtml += `<div style="margin-bottom: 8px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                        <span>${day}</span>
+                        <span style="color: #4a5fa7;">${data.completed}/${data.total} (${data.percent}%)</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${data.percent}%"></div>
+                    </div>
+                </div>`;
+            });
+            statsHtml += '</div>';
+            
+            html += `<div class="card">
+                <div style="font-weight: 600; color: #fff; margin-bottom: 8px;">${client.name}</div>
+                ${statsHtml}
+            </div>`;
+        }
+        
+        document.getElementById('statisticsContent').innerHTML = html || '<div class="empty-state">Нет данных</div>';
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function loadClientPlanView() {
+    try {
+        const res = await fetch(`/api/plan/${currentUser}`);
+        const plan = await res.json();
+        
+        if (!plan || !plan.plan) {
+            document.getElementById('clientPlanContent').innerHTML = '<div class="empty-state">План ещё не создан тренером</div>';
+            return;
+        }
+        
+        const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+        let html = '';
+        
+        for (const day of days) {
+            if (plan.plan[day] && plan.plan[day].length > 0) {
+                html += `<div class="day-card">
+                    <div class="day-title">📅 ${day}</div>`;
+                
+                plan.plan[day].forEach((exercise, idx) => {
+                    const isCompleted = plan.progress && plan.progress[day] && plan.progress[day][idx];
+                    html += `<div class="exercise-item ${isCompleted ? 'completed' : ''}">
+                        <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="markExercise(${idx}, '${day}', this.checked)">
+                        <span>${exercise}</span>
+                    </div>`;
+                });
+                
+                html += `<div class="comment-box">
+                    <textarea id="comment-${day}" placeholder="Добавить комментарий..." style="width: 100%; padding: 8px; border: 1px solid #2d3a5c; background: #0f1628; color: #e0e0e0; border-radius: 4px; font-family: inherit; min-height: 60px;"></textarea>
+                    <button class="btn-small" style="margin-top: 8px; width: 100%;" onclick="addComment('${day}')">Добавить 💬</button>
+                    <div id="comments-${day}" style="margin-top: 12px;"></div>
+                </div>
+                </div>`;
+            }
+        }
+        
+        document.getElementById('clientPlanContent').innerHTML = html || '<div class="empty-state">План не содержит упражнений</div>';
+        
+        // Загрузить комментарии
+        for (const day of days) {
+            loadComments(day);
+        }
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function markExercise(idx, day, completed) {
+    try {
+        await fetch('/api/workout-progress', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId: currentUser, day, exerciseIndex: idx, completed })
+        });
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function addComment(day) {
+    const text = document.getElementById(`comment-${day}`).value;
+    if (!text.trim()) return;
+    
+    try {
+        const res = await fetch('/api/plan-comment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId: currentUser, day, text })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById(`comment-${day}`).value = '';
+            loadComments(day);
+        }
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function loadComments(day) {
+    try {
+        const res = await fetch(`/api/plan-comments/${currentUser}/${day}`);
+        const comments = await res.json();
+        
+        let html = '';
+        comments.forEach(c => {
+            const date = new Date(c.date).toLocaleString('ru-RU');
+            html += `<div class="comment-item">${c.text}<div class="comment-date">${date}</div></div>`;
+        });
+        
+        document.getElementById(`comments-${day}`).innerHTML = html;
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function loadClientStats() {
+    try {
+        const res = await fetch(`/api/plan-stats/${currentUser}`);
+        const data = await res.json();
+        const stats = data.stats;
+        
+        let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">';
+        
+        Object.entries(stats).forEach(([day, data]) => {
+            html += `<div class="stat-card">
+                <div class="stat-label">${day}</div>
+                <div class="stat-value" style="font-size: 24px;">${data.percent}%</div>
+                <div style="font-size: 11px; color: #a0a0a0; margin-top: 4px;">${data.completed}/${data.total} упр.</div>
             </div>`;
         });
-        document.getElementById('announcementsForClient').innerHTML = html || '<div class="empty-state">Нет объявлений</div>';
-    } catch (e) { log('Error: ' + e); }
-}
-
-async function deleteAnnouncement(id) {
-    try {
-        const res = await fetch(`/api/announcement/${id}`, { method: 'DELETE' });
-        if (res.ok) {
-            loadAnnouncementsForTrainer();
-        }
-    } catch (e) { log('Error: ' + e); }
-}
-
-async function showClientUI(name) {
-    document.getElementById('loginScreen').classList.add('hidden');
-    document.getElementById('clientDashboard').classList.remove('hidden');
-    document.getElementById('clientTitle').textContent = '💪 ' + name;
-    
-    try {
-        const res = await fetch(`/api/client/${currentUser}`);
-        const client = await res.json();
-        document.getElementById('clientWeight').textContent = client.stats.weight + 'кг';
-        document.getElementById('clientFat').textContent = client.stats.bodyFat + '%';
-        document.getElementById('clientProgress').textContent = client.progress + '%';
-        document.getElementById('clientGoalText').textContent = client.goal;
-        document.getElementById('clientGoalDetails').textContent = client.goalDetails || 'Установите цель';
         
-        document.getElementById('goalSelect').value = client.goal;
-        document.getElementById('goalDetails').value = client.goalDetails || '';
-    } catch (e) { log('Error: ' + e); }
-}
-
-async function setGoal() {
-    const goal = document.getElementById('goalSelect').value;
-    const details = document.getElementById('goalDetails').value;
-    
-    try {
-        const res = await fetch(`/api/goal/${currentUser}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ goal, details })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showMessage('Цель обновлена!');
-            document.getElementById('clientGoalText').textContent = goal;
-            document.getElementById('clientGoalDetails').textContent = details;
-        }
-    } catch (e) { showMessage('Ошибка', 'error'); }
-}
-
-async function recordWeight() {
-    const value = document.getElementById('weightInput').value;
-    if (!value) {
-        showMessage('Введите вес', 'error');
-        return;
-    }
-    
-    try {
-        const res = await fetch('/api/weight', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clientId: currentUser, value })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showMessage('Вес записан!');
-            document.getElementById('weightInput').value = '';
-            document.getElementById('clientWeight').textContent = value + 'кг';
-        }
-    } catch (e) { showMessage('Ошибка', 'error'); }
-}
-
-async function addMeal() {
-    const name = document.getElementById('mealName').value;
-    const cal = parseInt(document.getElementById('mealCalories').value) || 0;
-    const prot = parseInt(document.getElementById('mealProteins').value) || 0;
-    
-    if (!name) {
-        showMessage('Введите блюдо', 'error');
-        return;
-    }
-    
-    try {
-        const res = await fetch('/api/meal', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clientId: currentUser, name, calories: cal, proteins: prot, fats: 0, carbs: 0 })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showMessage('Прием пищи добавлен!');
-            document.getElementById('mealName').value = '';
-            document.getElementById('mealCalories').value = '';
-            document.getElementById('mealProteins').value = '';
-            loadMeals();
-        }
-    } catch (e) { showMessage('Ошибка', 'error'); }
-}
-
-async function loadMeals() {
-    try {
-        const res = await fetch(`/api/client/${currentUser}`);
-        const client = await res.json();
-        const html = client.meals.length > 0 
-            ? client.meals.map(m => `<tr><td><strong>${m.name}</strong></td><td>${m.calories}ккал</td><td>${m.proteins}/${0}/${0}</td></tr>`).join('')
-            : '<tr><td colspan="3" style="text-align: center; color: #999;">Нет данных</td></tr>';
-        document.getElementById('mealsList').innerHTML = html;
-    } catch (e) { log('Error: ' + e); }
-}
-
-async function addWorkout() {
-    const type = document.getElementById('workoutType').value;
-    const dur = parseInt(document.getElementById('workoutDuration').value) || 0;
-    const int = document.getElementById('workoutIntensity').value;
-    
-    if (!dur) {
-        showMessage('Введите длительность', 'error');
-        return;
-    }
-    
-    try {
-        const res = await fetch('/api/workout', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ clientId: currentUser, type, duration: dur, intensity: int, exercises: [] })
-        });
-        const data = await res.json();
-        if (data.success) {
-            showMessage('Тренировка добавлена!');
-            document.getElementById('workoutDuration').value = '';
-            loadWorkouts();
-        }
-    } catch (e) { showMessage('Ошибка', 'error'); }
-}
-
-async function loadWorkouts() {
-    try {
-        const res = await fetch(`/api/client/${currentUser}`);
-        const client = await res.json();
-        const html = client.workouts.length > 0 
-            ? client.workouts.map(w => `<tr><td>${w.type}</td><td>${w.date}</td><td>${w.duration}мин</td></tr>`).join('')
-            : '<tr><td colspan="3" style="text-align: center; color: #999;">Нет данных</td></tr>';
-        document.getElementById('workoutsList').innerHTML = html;
-    } catch (e) { log('Error: ' + e); }
+        html += '</div>';
+        document.getElementById('clientStatsContent').innerHTML = html || '<div class="empty-state">Нет данных</div>';
+    } catch (e) { console.log('Error:', e); }
 }
 
 function logout() {
@@ -1077,8 +853,6 @@ function logout() {
     document.getElementById('clientUsername').value = '';
     document.getElementById('clientPassword').value = '';
 }
-
-loadAnnouncementsForTrainer();
 </script>
 
 </body>
