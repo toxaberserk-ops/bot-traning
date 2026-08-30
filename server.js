@@ -343,6 +343,36 @@ app.delete('/api/announcement/:id', (req, res) => {
     }
 });
 
+// ============ Активность по датам ============
+
+app.get('/api/activity/:date', (req, res) => {
+    const { date } = req.params;
+    const db = loadDB();
+    
+    const activity = db.clients.map(client => {
+        const meals = (db.meals[client.id] || []).filter(m => m.date === date);
+        const workouts = (db.workouts[client.id] || []).filter(w => w.date === date);
+        
+        const totalCalories = meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+        const totalDuration = workouts.reduce((sum, w) => sum + (w.duration || 0), 0);
+        
+        return {
+            clientId: client.id,
+            clientName: client.name,
+            meals,
+            workouts,
+            stats: {
+                mealsCount: meals.length,
+                totalCalories,
+                workoutsCount: workouts.length,
+                totalDuration
+            }
+        };
+    });
+    
+    res.json({ date, activity });
+});
+
 // ============ Статические файлы ============
 
 app.get('/', (req, res) => {

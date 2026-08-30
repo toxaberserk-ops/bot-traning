@@ -358,6 +358,7 @@
         <div class="content">
             <div class="tabs">
                 <button class="tab-btn active" onclick="setTab('trainer', 'overview')">Обзор</button>
+                <button class="tab-btn" onclick="setTab('trainer', 'activity')">Активность</button>
                 <button class="tab-btn" onclick="setTab('trainer', 'clients')">Клиенты</button>
                 <button class="tab-btn" onclick="setTab('trainer', 'announcements')">Объявления</button>
             </div>
@@ -416,6 +417,24 @@
                 <div class="section">
                     <h3>Клиенты и их прогресс</h3>
                     <div id="clientsList"></div>
+                </div>
+            </div>
+            
+            <div id="trainer-activity" class="hidden">
+                <div class="section">
+                    <h3>📅 Активность клиентов по датам</h3>
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label>Выберите дату</label>
+                            <input type="date" id="activityDate" value="">
+                        </div>
+                        <button class="btn" onclick="loadActivityByDate()">Показать активность 📊</button>
+                    </div>
+                </div>
+                
+                <div class="section" id="activitySection" style="display: none;">
+                    <h3 id="activityDateTitle">Активность на дату</h3>
+                    <div id="activityList"></div>
                 </div>
             </div>
             
@@ -644,6 +663,67 @@ function setTab(view, tab) {
     
     if (view === 'client' && tab === 'announcements') loadAnnouncementsForClient();
     if (view === 'trainer' && tab === 'announcements') loadAnnouncementsForTrainer();
+    if (view === 'trainer' && tab === 'activity') setDefaultDate();
+}
+
+function setDefaultDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('activityDate').value = today;
+}
+
+async function loadActivityByDate() {
+    const date = document.getElementById('activityDate').value;
+    
+    if (!date) {
+        showMessage('Выберите дату', 'error');
+        return;
+    }
+    
+    try {
+        const res = await fetch(`/api/activity/${date}`);
+        const data = await res.json();
+        
+        document.getElementById('activityDateTitle').textContent = `📅 Активность на ${date}`;
+        
+        let html = '';
+        data.activity.forEach(client => {
+            if (client.stats.mealsCount > 0 || client.stats.workoutsCount > 0) {
+                html += `<div class="card" style="margin-bottom: 16px;">
+                    <div style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">${client.clientName}</div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">🍽️ Питание (${client.stats.mealsCount})</div>
+                        ${client.meals.length > 0 
+                            ? `<div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
+                                ${client.meals.map(m => `<div style="padding: 4px 0; font-size: 13px;">${m.time} - ${m.name} (${m.calories}ккал, Б${m.proteins}Ж${m.fats}У${m.carbs})</div>`).join('')}
+                            </div>`
+                            : '<div style="color: #999; font-size: 13px;">Нет записей</div>'
+                        }
+                    </div>
+                    
+                    <div>
+                        <div style="font-weight: 600; color: #667eea; margin-bottom: 8px;">🏋️ Тренировки (${client.stats.workoutsCount}, ${client.stats.totalDuration} мин)</div>
+                        ${client.workouts.length > 0 
+                            ? `<div style="background: #f8f9ff; padding: 12px; border-radius: 6px;">
+                                ${client.workouts.map(w => `<div style="padding: 4px 0; font-size: 13px;">${w.time} - ${w.type} (${w.duration}мин, ${w.intensity})</div>`).join('')}
+                            </div>`
+                            : '<div style="color: #999; font-size: 13px;">Нет записей</div>'
+                        }
+                    </div>
+                </div>`;
+            }
+        });
+        
+        if (html === '') {
+            html = '<div class="empty-state"><p>Нет активности на эту дату</p></div>';
+        }
+        
+        document.getElementById('activityList').innerHTML = html;
+        document.getElementById('activitySection').style.display = 'block';
+    } catch (e) {
+        showMessage('Ошибка при загрузке', 'error');
+        log('Error: ' + e);
+    }
 }
 
 async function loginTrainer() {
