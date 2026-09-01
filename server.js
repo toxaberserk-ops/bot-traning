@@ -343,7 +343,92 @@ app.delete('/api/announcement/:id', (req, res) => {
     }
 });
 
-// ============ Активность по датам ============
+// ============ Питание (подробное) ============
+
+app.post('/api/food', (req, res) => {
+    const { clientId, name, calories, proteins, fats, carbs, weight } = req.body;
+    const db = loadDB();
+    
+    if (!db.meals) db.meals = {};
+    if (!db.meals[clientId]) db.meals[clientId] = [];
+    
+    const food = {
+        id: Date.now(),
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        name,
+        calories: parseInt(calories) || 0,
+        proteins: parseFloat(proteins) || 0,
+        fats: parseFloat(fats) || 0,
+        carbs: parseFloat(carbs) || 0,
+        weight: parseInt(weight) || 0
+    };
+    
+    db.meals[clientId].push(food);
+    saveDB(db);
+    res.json({ success: true, food, message: 'Продукт добавлен!' });
+});
+
+app.get('/api/meals/:clientId/:date', (req, res) => {
+    const { clientId, date } = req.params;
+    const db = loadDB();
+    
+    if (!db.meals || !db.meals[clientId]) {
+        return res.json({ meals: [], stats: { calories: 0, proteins: 0, fats: 0, carbs: 0 } });
+    }
+    
+    const meals = db.meals[clientId].filter(m => m.date === date);
+    
+    const stats = {
+        calories: meals.reduce((sum, m) => sum + m.calories, 0),
+        proteins: meals.reduce((sum, m) => sum + m.proteins, 0),
+        fats: meals.reduce((sum, m) => sum + m.fats, 0),
+        carbs: meals.reduce((sum, m) => sum + m.carbs, 0)
+    };
+    
+    res.json({ meals, stats });
+});
+
+app.delete('/api/food/:clientId/:foodId', (req, res) => {
+    const { clientId, foodId } = req.params;
+    const db = loadDB();
+    
+    if (db.meals && db.meals[clientId]) {
+        db.meals[clientId] = db.meals[clientId].filter(f => f.id != foodId);
+        saveDB(db);
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: 'Not found' });
+    }
+});
+
+// ============ Цели клиента ============
+
+app.post('/api/client-goals', (req, res) => {
+    const { clientId, goals } = req.body;
+    const db = loadDB();
+    
+    if (!db.clientGoals) db.clientGoals = {};
+    
+    db.clientGoals[clientId] = {
+        goals,
+        createdAt: new Date().toISOString()
+    };
+    
+    saveDB(db);
+    res.json({ success: true, message: 'Цели сохранены!' });
+});
+
+app.get('/api/client-goals/:clientId', (req, res) => {
+    const { clientId } = req.params;
+    const db = loadDB();
+    
+    if (!db.clientGoals || !db.clientGoals[clientId]) {
+        return res.json({});
+    }
+    
+    res.json(db.clientGoals[clientId]);
+});
 
 app.get('/api/activity/:date', (req, res) => {
     const { date } = req.params;
@@ -473,6 +558,93 @@ app.get('/api/plan-stats/:clientId', (req, res) => {
     });
     
     res.json({ stats });
+});
+
+// ============ Питание ============
+
+app.post('/api/food', (req, res) => {
+    const { clientId, name, calories, proteins, fats, carbs, weight } = req.body;
+    const db = loadDB();
+    
+    if (!db.meals) db.meals = {};
+    if (!db.meals[clientId]) db.meals[clientId] = [];
+    
+    const food = {
+        id: Date.now(),
+        date: new Date().toISOString().split('T')[0],
+        time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        name,
+        calories: parseInt(calories) || 0,
+        proteins: parseFloat(proteins) || 0,
+        fats: parseFloat(fats) || 0,
+        carbs: parseFloat(carbs) || 0,
+        weight: parseInt(weight) || 0
+    };
+    
+    db.meals[clientId].push(food);
+    saveDB(db);
+    res.json({ success: true, food });
+});
+
+app.get('/api/meals/:clientId/:date', (req, res) => {
+    const { clientId, date } = req.params;
+    const db = loadDB();
+    
+    if (!db.meals || !db.meals[clientId]) {
+        return res.json({ meals: [], stats: { calories: 0, proteins: 0, fats: 0, carbs: 0 } });
+    }
+    
+    const meals = db.meals[clientId].filter(m => m.date === date);
+    
+    const stats = {
+        calories: meals.reduce((sum, m) => sum + m.calories, 0),
+        proteins: meals.reduce((sum, m) => sum + m.proteins, 0),
+        fats: meals.reduce((sum, m) => sum + m.fats, 0),
+        carbs: meals.reduce((sum, m) => sum + m.carbs, 0)
+    };
+    
+    res.json({ meals, stats });
+});
+
+app.delete('/api/food/:clientId/:foodId', (req, res) => {
+    const { clientId, foodId } = req.params;
+    const db = loadDB();
+    
+    if (db.meals && db.meals[clientId]) {
+        db.meals[clientId] = db.meals[clientId].filter(f => f.id != foodId);
+        saveDB(db);
+        res.json({ success: true });
+    } else {
+        res.status(404).json({ error: 'Not found' });
+    }
+});
+
+// ============ Цели клиента ============
+
+app.post('/api/client-goals', (req, res) => {
+    const { clientId, goals } = req.body;
+    const db = loadDB();
+    
+    if (!db.clientGoals) db.clientGoals = {};
+    
+    db.clientGoals[clientId] = {
+        goals,
+        createdAt: new Date().toISOString()
+    };
+    
+    saveDB(db);
+    res.json({ success: true });
+});
+
+app.get('/api/client-goals/:clientId', (req, res) => {
+    const { clientId } = req.params;
+    const db = loadDB();
+    
+    if (!db.clientGoals || !db.clientGoals[clientId]) {
+        return res.json({});
+    }
+    
+    res.json(db.clientGoals[clientId]);
 });
 
 // ============ Статические файлы ============
