@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitTrack Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #fafafa; color: #333; }
+        .app { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
+        .login-screen { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%); }
+        .login-box { width: 100%; max-width: 450px; background: white; padding: 40px; border-radius: 16px; border: 1px solid #e0e0e0; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .logo { font-size: 64px; text-align: center; margin-bottom: 12px; }
+        .login-box h1 { font-size: 28px; text-align: center; margin-bottom: 8px; color: #c41e3a; font-weight: 700; }
+        .login-box > p { font-size: 14px; text-align: center; color: #666; margin-bottom: 30px; }
+        .role-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .role-btn { padding: 16px; border: 2px solid #e0e0e0; background: white; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.3s; }
+        .role-btn:hover { border-color: #c41e3a; background: #fff5f5; }
+        .role-btn.active { background: #c41e3a; color: white; border-color: #c41e3a; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #e0e0e0; background: white; border-radius: 8px; font-size: 14px; font-family: inherit; color: #333; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #c41e3a; box-shadow: 0 0 0 3px rgba(196, 30, 58, 0.1); }
+        .btn { width: 100%; padding: 12px; background: #c41e3a; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.3s; }
+        .btn:hover { background: #a01830; }
+        .btn-small { padding: 6px 12px; width: auto; background: #e8e8e8; color: #333; cursor: pointer; border: none; border-radius: 6px; }
+        .btn-small:hover { background: #d0d0d0; }
+        .hidden { display: none !important; }
+        .dashboard { flex: 1; display: flex; flex-direction: column; background: #fafafa; }
+        .navbar { background: white; padding: 16px 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h2 { font-size: 20px; color: #c41e3a; font-weight: 700; }
+        .content { flex: 1; overflow-y: auto; padding: 20px; max-width: 1400px; margin: 0 auto; width: 100%; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; overflow-x: auto; position: relative; }
+        .tab-btn { padding: 12px 16px; background: none; border: none; cursor: pointer; font-weight: 600; font-size: 14px; color: #999; border-bottom: 3px solid transparent; white-space: nowrap; position: relative; }
+        .tab-btn.active { color: #c41e3a; border-bottom-color: #c41e3a; }
+        .notification-badge { position: absolute; top: 0; right: 0; background: #c41e3a; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+        .section { margin-bottom: 24px; }
+        .section h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: #333; }
+        .stat-card { background: white; border: 1px solid #e0e0e0; padding: 24px; border-radius: 12px; margin-bottom: 16px; text-align: center; }
+        .stat-label { font-size: 12px; color: #999; margin-bottom: 8px; font-weight: 600; }
+        .stat-value { font-size: 36px; font-weight: 700; color: #c41e3a; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .card { background: white; padding: 16px; border-radius: 12px; border: 1px solid #e0e0e0; margin-bottom: 12px; }
+        .form-section { background: white; padding: 20px; border-radius: 12px; margin-bottom: 16px; border: 1px solid #e0e0e0; }
+        .message { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; display: none; }
+        .message.show { display: block; }
+        .message.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+        .message.error { background: #ffebee; color: #c41e3a; border: 1px solid #ffcdd2; }
+        .goal-chip { display: inline-block; background: #fff5f5; border: 1px solid #f0d0d6; padding: 12px 16px; border-radius: 20px; margin-right: 8px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; font-size: 14px; }
+        .goal-chip:hover { border-color: #c41e3a; background: #ffebee; }
+        .goal-chip.active { background: #c41e3a; color: white; border-color: #c41e3a; }
+        .goal-description { font-size: 12px; color: #999; margin-top: 4px; }
+        .nutrition-stats { background: white; border: 1px solid #e0e0e0; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+        .nutrition-stat-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+        .nutrition-stat-item:last-child { border-bottom: none; }
+        .nutrition-stat-label { font-weight: 600; color: #333; }
+        .nutrition-stat-value { font-size: 16px; font-weight: 700; color: #c41e3a; }
+        .food-item { background: #f5f5f5; padding: 12px; margin-bottom: 8px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .floating-logout { position: fixed; bottom: 20px; right: 20px; background: white; border: 1px solid #e0e0e0; border-radius: 50px; padding: 12px 16px; cursor: pointer; font-size: 12px; font-weight: 600; color: #999; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .floating-logout:hover { background: #f5f5f5; color: #c41e3a; }
+        .empty-state { text-align: center; padding: 40px 20px; color: #999; }
+        @media (max-width: 768px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <!-- LOGIN -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-box">
+            <div class="logo">💪</div>
+            <h1>FitTrack Pro</h1>
+            <p>Управление фитнесом</p>
+            
+            <div class="role-buttons">
+                <button class="role-btn active" onclick="setRole('trainer')">👨‍🏫 Тренер</button>
+                <button class="role-btn" onclick="setRole('client')">💪 Клиент</button>
+            </div>
+            
+            <div id="trainerLoginForm">
+                <div class="form-group">
+                    <label>Пин-код</label>
+                    <input type="password" id="pinInput" placeholder="••••" maxlength="4">
+                </div>
+                <button class="btn" onclick="loginTrainer()">Вход</button>
+            </div>
+            
+            <div id="clientLoginForm" class="hidden">
+                <div class="form-group">
+                    <label>Логин</label>
+                    <input type="text" id="clientUsername" placeholder="ivan">
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="clientPassword" placeholder="••••" autocomplete="off">
+                </div>
+                <button class="btn" onclick="loginClient()">Вход</button>
+            </div>
+            
+            <div id="message" class="message"></div>
+        </div>
+    </div>
+    
+    <!-- TRAINER -->
+    <div id="trainerDashboard" class="dashboard hidden">
+        <div class="navbar">
+            <h2>💪 FitTrack Admin</h2>
+        </div>
+        <div class="content">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="setTab('trainer', 'clients')">Клиенты</button>
+                <button class="tab-btn" onclick="setTab('trainer', 'plans')">Планы</button>
+                <button class="tab-btn" onclick="setTab('trainer', 'activity')">Активность</button>
+                <button class="tab-btn" onclick="setTab('trainer', 'announcements')">Объявления <span class="notification-badge" id="badgeT" style="display: none;">0</span></button>
+            </div>
+            
+            <div id="trainer-clients">
+                <div class="grid-3">
+                    <div class="stat-card"><div class="stat-label">Клиентов</div><div class="stat-value" id="totalClients">0</div></div>
+                    <div class="stat-card"><div class="stat-label">Прогресс</div><div class="stat-value" id="avgProgress">0%</div></div>
+                    <div class="stat-card"><div class="stat-label">Активных</div><div class="stat-value" id="activeToday">0</div></div>
+                </div>
+                <div class="section">
+                    <h3>Добавить клиента</h3>
+                    <div class="form-section">
+                        <div class="form-group"><label>Имя</label><input type="text" id="newClientName" placeholder="Иван Петров"></div>
+                        <div class="grid-2">
+                            <div class="form-group"><label>Логин</label><input type="text" id="newClientUsername" placeholder="ivan"></div>
+                            <div class="form-group"><label>Пароль</label><input type="password" id="newClientPassword" placeholder="••••" autocomplete="off"></div>
+                        </div>
+                        <button class="btn" onclick="createNewClient()">Добавить клиента</button>
+                    </div>
+                </div>
+                <div class="section"><h3>Клиенты</h3><div id="clientsList"></div></div>
+            </div>
+            
+            <div id="trainer-plans" class="hidden">
+                <div class="section">
+                    <h3>План тренировок и питание</h3>
+                    <div class="form-section">
+                        <div class="form-group"><label>Клиент</label><select id="planClientSelect" onchange="loadClientPlan()"></select></div>
+                        <div id="planDays" style="display: none;">
+                            <div style="display: flex; gap: 12px; margin: 20px 0; border-bottom: 2px solid #e0e0e0; padding-bottom: 12px;">
+                                <button class="btn-small" onclick="setPlanMode('workout')" id="workoutModeBtn" style="background: #c41e3a; color: white;">🏋️ Тренировки</button>
+                                <button class="btn-small" onclick="setPlanMode('nutrition')" id="nutritionModeBtn">🍽️ Питание</button>
+                            </div>
+                            <div id="workoutPlanEditor"></div>
+                            <div id="nutritionPlanEditor" style="display: none;"></div>
+                            <button class="btn" style="margin-top: 16px;" onclick="savePlan()">Сохранить</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="trainer-activity" class="hidden">
+                <div class="section">
+                    <h3>Активность по датам</h3>
+                    <div class="form-section">
+                        <div class="form-group"><label>Дата</label><input type="date" id="activityDate"></div>
+                        <button class="btn" onclick="loadActivityByDate()">Показать</button>
+                    </div>
+                </div>
+                <div id="activitySection"></div>
+            </div>
+            
+            <div id="trainer-announcements" class="hidden">
+                <div class="section">
+                    <h3>Объявления</h3>
+                    <div class="form-section">
+                        <div class="form-group"><label>Сообщение</label><textarea id="announcementText" placeholder="Напишите..." style="min-height: 80px;"></textarea></div>
+                        <button class="btn" onclick="sendAnnouncement()">Отправить</button>
+                    </div>
+                </div>
+                <div id="announcementsList"></div>
+            </div>
+        </div>
+        <div class="floating-logout" onclick="logout()">← Выход</div>
+    </div>
+    
+    <!-- CLIENT -->
+    <div id="clientDashboard" class="dashboard hidden">
+        <div class="navbar">
+            <h2 id="clientTitle">💪 Профиль</h2>
+        </div>
+        <div class="content">
+            <div id="message" class="message"></div>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="setTab('client', 'profile')">Профиль</button>
+                <button class="tab-btn" onclick="setTab('client', 'goals')">Цели</button>
+                <button class="tab-btn" onclick="setTab('client', 'nutrition')">Питание</button>
+                <button class="tab-btn" onclick="setTab('client', 'plan')">План</button>
+                <button class="tab-btn" onclick="setTab('client', 'stats')">Статистика</button>
+                <button class="tab-btn" onclick="setTab('client', 'announcements')">Объявления <span class="notification-badge" id="badgeC" style="display: none;">0</span></button>
+            </div>
+            
+            <div id="client-profile">
+                <div class="grid-3">
+                    <div class="stat-card"><div class="stat-label">Вес</div><div class="stat-value" id="clientWeight">-</div></div>
+                    <div class="stat-card"><div class="stat-label">Прогресс</div><div class="stat-value" id="clientProgress">-</div></div>
+                    <div class="stat-card"><div class="stat-label">Цель</div><div class="stat-value" id="clientGoalText">-</div></div>
+                </div>
+            </div>
+            
+            <div id="client-goals" class="hidden">
+                <div class="section">
+                    <h3>Выберите свои цели</h3>
+                    <div class="form-section">
+                        <div id="goalsContainer"></div>
+                        <button class="btn" onclick="saveClientGoals()" style="margin-top: 20px;">Сохранить цели 🎯</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="client-nutrition" class="hidden">
+                <div class="section">
+                    <h3>Дневник питания</h3>
+                    <div class="nutrition-stats" id="nutritionStatsDiv"></div>
+                    <div class="form-section">
+                        <h4 style="margin-bottom: 16px;">Добавить продукт</h4>
+                        <div class="form-group">
+                            <label>Поиск</label>
+                            <input type="text" id="foodSearch" placeholder="курица, яйцо, рис..." onkeyup="searchFoods(this.value)">
+                            <div id="foodSearchResults" style="display: none; background: white; border: 1px solid #e0e0e0; border-radius: 8px; margin-top: 8px; max-height: 300px; overflow-y: auto;"></div>
+                        </div>
+                        <div class="form-group"><label>Количество (г)</label><input type="number" id="foodWeight" placeholder="100" min="1"></div>
+                        <button class="btn" onclick="addFoodToNutrition()">Добавить</button>
+                    </div>
+                    <div class="section"><h3>Добавленные</h3><div id="foodList"></div></div>
+                </div>
+            </div>
+            
+            <div id="client-plan" class="hidden">
+                <div class="section"><div id="clientPlanContent"></div></div>
+            </div>
+            
+            <div id="client-stats" class="hidden">
+                <div class="section"><h3>Прогресс</h3><div id="clientStatsContent"></div></div>
+            </div>
+            
+            <div id="client-announcements" class="hidden">
+                <div class="section"><h3>Объявления</h3><div id="clientAnnouncementsList"></div></div>
+            </div>
+        </div>
+        <div class="floating-logout" onclick="logout()">← Выход</div>
+    </div>
+</div>
+
+<script>
+const foodDatabase = [
+    {name: 'Куриное филе', calories: 165, proteins: 31.6, fats: 3.6, carbs: 0},
+    {name: 'Говяжий стейк', calories: 250, proteins: 26, fats: 15, carbs: 0},
+    {name: 'Лосось', calories: 206, proteins: 22, fats: 13, carbs: 0},
+    {name: 'Треска', calories: 82, proteins: 17, fats: 0.7, carbs: 0},
+    {name: 'Яйцо вареное', calories: 155, proteins: 13, fats: 11, carbs: 1.1},
+    {name: 'Молоко', calories: 61, proteins: 3.2, fats: 3.3, carbs: 4.8},
+    {name: 'Творог', calories: 86, proteins: 14, fats: 0.4, carbs: 1.3},
+    {name: 'Сыр', calories: 363, proteins: 24.3, fats: 29.3, carbs: 0},
+    {name: 'Рис вареный', calories: 130, proteins: 2.7, fats: 0.3, carbs: 28},
+    {name: 'Гречка', calories: 132, proteins: 4.3, fats: 1.1, carbs: 28},
+    {name: 'Овсяная каша', calories: 152, proteins: 6.2, fats: 6.3, carbs: 27},
+    {name: 'Макаронные изделия', calories: 131, proteins: 4.6, fats: 1.1, carbs: 25},
+    {name: 'Картофель вареный', calories: 82, proteins: 2.5, fats: 0.1, carbs: 17},
+    {name: 'Морковь', calories: 41, proteins: 0.9, fats: 0.2, carbs: 10},
+    {name: 'Помидоры', calories: 18, proteins: 0.9, fats: 0.2, carbs: 3.9},
+    {name: 'Огурцы', calories: 15, proteins: 0.7, fats: 0.1, carbs: 3},
+    {name: 'Брокколи', calories: 34, proteins: 2.8, fats: 0.4, carbs: 7},
+    {name: 'Яблоко', calories: 52, proteins: 0.3, fats: 0.2, carbs: 14},
+    {name: 'Банан', calories: 89, proteins: 1.1, fats: 0.3, carbs: 23},
+    {name: 'Апельсин', calories: 47, proteins: 0.7, fats: 0.2, carbs: 12},
+    {name: 'Миндаль', calories: 579, proteins: 21, fats: 50, carbs: 22},
+    {name: 'Грецкие орехи', calories: 654, proteins: 15, fats: 65, carbs: 14},
+    {name: 'Оливковое масло', calories: 884, proteins: 0, fats: 100, carbs: 0},
+    {name: 'Сливочное масло', calories: 717, proteins: 0.9, fats: 81.5, carbs: 0.9},
+    {name: 'Протеиновый коктейль', calories: 120, proteins: 25, fats: 2, carbs: 3},
+];
+
+const allGoals = [
+    { emoji: '💪', title: 'Набор мышечной массы', description: 'Увеличение объема мышц' },
+    { emoji: '🔥', title: 'Похудение', description: 'Снижение веса и жировой массы' },
+    { emoji: '⚡', title: 'Увеличение силы', description: 'Рост силовых показателей' },
+    { emoji: '🏃', title: 'Повышение выносливости', description: 'Улучшение кардио и выносливости' },
+    { emoji: '🎯', title: 'Улучшение осанки', description: 'Прямая спина и красивая походка' },
+    { emoji: '🧘', title: 'Повышение гибкости', description: 'Улучшение растяжки и подвижности' },
+    { emoji: '❤️', title: 'Укрепление сердца', description: 'Здоровое сердце и сосуды' },
+    { emoji: '💨', title: 'Увеличение скорости', description: 'Быстрые и взрывные движения' },
+    { emoji: '📈', title: 'Увеличение мощности', description: 'Больше энергии и динамики' },
+    { emoji: '🏋️', title: 'Рельеф тела', description: 'Видимые мышцы и определенность' },
+    { emoji: '🤸', title: 'Повышение координации', description: 'Лучшая ловкость и баланс' },
+    { emoji: '🧠', title: 'Улучшение физ. формы', description: 'Общее улучшение здоровья' },
+    { emoji: '🌙', title: 'Улучшение сна', description: 'Лучше спать и восстанавливаться' },
+    { emoji: '😊', title: 'Повышение энергии', description: 'Больше бодрости и активности' },
+    { emoji: '🎪', title: 'Развитие ловкости', description: 'Острые реакции и навыки' },
+];
+
+let currentRole = 'trainer', currentTab = {}, currentUser = null, currentClientForPlan = null, planMode = 'workout', selectedFoodForNutrition = null;
+
+function showMessage(text, type = 'success') {
+    const msg = document.getElementById('message');
+    msg.className = 'message show ' + type;
+    msg.textContent = text;
+    setTimeout(() => msg.classList.remove('show'), 3000);
+}
+
+function setRole(role) {
+    currentRole = role;
+    document.querySelectorAll('.role-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', (i === 0 && role === 'trainer') || (i === 1 && role === 'client'));
+    });
+    document.getElementById('trainerLoginForm').classList.toggle('hidden', role === 'client');
+    document.getElementById('clientLoginForm').classList.toggle('hidden', role === 'trainer');
+}
+
+function setTab(view, tab) {
+    currentTab[view] = tab;
+    document.querySelectorAll(`[id^="${view}-"]`).forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById(`${view}-${tab}`).classList.remove('hidden');
+    
+    if (view === 'trainer' && tab === 'plans') loadClientsForPlan();
+    if (view === 'trainer' && tab === 'activity') setDefaultDate();
+    if (view === 'trainer' && tab === 'announcements') loadTrainerAnnouncements();
+    if (view === 'client' && tab === 'goals') loadGoalChips();
+    if (view === 'client' && tab === 'nutrition') loadNutritionStats();
+    if (view === 'client' && tab === 'stats') loadClientStats();
+    if (view === 'client' && tab === 'announcements') loadClientAnnouncements();
+}
+
+function setPlanMode(mode) {
+    planMode = mode;
+    document.getElementById('workoutModeBtn').style.background = mode === 'workout' ? '#c41e3a' : '#e8e8e8';
+    document.getElementById('workoutModeBtn').style.color = mode === 'workout' ? 'white' : '#333';
+    document.getElementById('nutritionModeBtn').style.background = mode === 'nutrition' ? '#c41e3a' : '#e8e8e8';
+    document.getElementById('nutritionModeBtn').style.color = mode === 'nutrition' ? 'white' : '#333';
+    document.getElementById('workoutPlanEditor').style.display = mode === 'workout' ? 'block' : 'none';
+    document.getElementById('nutritionPlanEditor').style.display = mode === 'nutrition' ? 'block' : 'none';
+}
+
+function searchFoods(query) {
+    if (!query.trim()) {
+        document.getElementById('foodSearchResults').style.display = 'none';
+        return;
+    }
+    const results = foodDatabase.filter(f => f.name.toLowerCase().includes(query.toLowerCase())).slice(0, 10);
+    let html = '';
+    results.forEach(food => {
+        html += `<div style="padding: 8px 12px; border-bottom: 1px solid #f0f0f0; cursor: pointer;" onclick="selectFood('${food.name.replace(/'/g, "\\'")}', ${food.calories}, ${food.proteins}, ${food.fats}, ${food.carbs})">${food.name} - ${food.calories}ккал</div>`;
+    });
+    document.getElementById('foodSearchResults').innerHTML = html;
+    document.getElementById('foodSearchResults').style.display = 'block';
+}
+
+function selectFood(name, calories, proteins, fats, carbs) {
+    selectedFoodForNutrition = { name, calories, proteins, fats, carbs };
+    document.getElementById('foodSearch').value = name;
+    document.getElementById('foodSearchResults').style.display = 'none';
+}
+
+async function addFoodToNutrition() {
+    if (!selectedFoodForNutrition) {
+        showMessage('Выберите продукт из списка', 'error');
+        return;
+    }
+    const weight = parseInt(document.getElementById('foodWeight').value) || 100;
+    const multiplier = weight / 100;
+    try {
+        const res = await fetch('/api/food', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                clientId: currentUser,
+                name: selectedFoodForNutrition.name,
+                calories: Math.round(selectedFoodForNutrition.calories * multiplier),
+                proteins: (selectedFoodForNutrition.proteins * multiplier).toFixed(1),
+                fats: (selectedFoodForNutrition.fats * multiplier).toFixed(1),
+                carbs: (selectedFoodForNutrition.carbs * multiplier).toFixed(1),
+                weight
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('Продукт добавлен!');
+            document.getElementById('foodSearch').value = '';
+            document.getElementById('foodWeight').value = '';
+            selectedFoodForNutrition = null;
+            loadNutritionStats();
+        }
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function loadNutritionStats() {
+    const today = new Date().toISOString().split('T')[0];
+    try {
+        const res = await fetch(`/api/meals/${currentUser}/${today}`);
+        const data = await res.json();
+        let statsHtml = `
+            <div class="nutrition-stat-item">
+                <span class="nutrition-stat-label">Калории</span>
+                <span class="nutrition-stat-value">${data.stats.calories} ккал</span>
+            </div>
+            <div class="nutrition-stat-item">
+                <span class="nutrition-stat-label">Белки</span>
+                <span class="nutrition-stat-value">${data.stats.proteins.toFixed(1)} г</span>
+            </div>
+            <div class="nutrition-stat-item">
+                <span class="nutrition-stat-label">Жиры</span>
+                <span class="nutrition-stat-value">${data.stats.fats.toFixed(1)} г</span>
+            </div>
+            <div class="nutrition-stat-item">
+                <span class="nutrition-stat-label">Углеводы</span>
+                <span class="nutrition-stat-value">${data.stats.carbs.toFixed(1)} г</span>
+            </div>
+        `;
+        document.getElementById('nutritionStatsDiv').innerHTML = statsHtml;
+        
+        let foodHtml = '';
+        data.meals.forEach(meal => {
+            foodHtml += `<div class="food-item"><div><div style="font-weight: 600;">${meal.name}</div><div style="font-size: 12px; color: #999;">${meal.calories}ккал | Б${meal.proteins}Ж${meal.fats}У${meal.carbs}</div></div><button class="btn-small" onclick="deleteFood(${meal.id})">✕</button></div>`;
+        });
+        document.getElementById('foodList').innerHTML = foodHtml || '<div class="empty-state">Нет</div>';
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function deleteFood(foodId) {
+    try {
+        await fetch(`/api/food/${currentUser}/${foodId}`, { method: 'DELETE' });
+        loadNutritionStats();
+    } catch (e) { console.log('Error:', e); }
+}
+
+function loadGoalChips() {
+    let html = '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">';
+    allGoals.forEach((goal, idx) => {
+        html += `<div class="goal-chip" onclick="toggleGoal(this, '${goal.title.replace(/'/g, "\\'")}')">
+            <div>${goal.emoji} ${goal.title}</div>
+            <div class="goal-description">${goal.description}</div>
+        </div>`;
+    });
+    html += '</div>';
+    document.getElementById('goalsContainer').innerHTML = html;
+}
+
+function toggleGoal(el, goal) {
+    el.classList.toggle('active');
+}
+
+async function saveClientGoals() {
+    const selected = Array.from(document.querySelectorAll('.goal-chip.active')).map(el => el.querySelector('div').textContent);
+    if (selected.length === 0) {
+        showMessage('Выберите хотя бы одну цель', 'error');
+        return;
+    }
+    try {
+        const res = await fetch('/api/client-goals', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ clientId: currentUser, goals: selected })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('Цели сохранены! 🎯');
+        }
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function updateAnnouncementBadge() {
+    try {
+        const res = await fetch('/api/announcements');
+        const announcements = await res.json();
+        if (announcements.length > 0) {
+            const badgeC = document.getElementById('badgeC');
+            const badgeT = document.getElementById('badgeT');
+            if (badgeC) { badgeC.textContent = announcements.length; badgeC.style.display = 'flex'; }
+            if (badgeT) { badgeT.textContent = announcements.length; badgeT.style.display = 'flex'; }
+        }
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function loginTrainer() {
+    const pin = document.getElementById('pinInput').value;
+    try {
+        const res = await fetch('/api/login/trainer', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin })
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentUser = 'trainer';
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('trainerDashboard').classList.remove('hidden');
+            loadTrainerDashboard();
+            updateAnnouncementBadge();
+        } else {
+            showMessage('Неверный пин-код', 'error');
+        }
+    } catch (e) {
+        showMessage('Ошибка подключения', 'error');
+    }
+}
+
+async function loginClient() {
+    const username = document.getElementById('clientUsername').value;
+    const password = document.getElementById('clientPassword').value;
+    if (!username || !password) {
+        showMessage('Введите логин и пароль', 'error');
+        return;
+    }
+    try {
+        const res = await fetch('/api/login/client', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+            currentUser = data.clientId;
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('clientDashboard').classList.remove('hidden');
+            document.getElementById('clientTitle').textContent = '💪 ' + data.name;
+            loadClientProfile();
+            loadClientPlanView();
+            updateAnnouncementBadge();
+        } else {
+            showMessage('Неверные логин или пароль', 'error');
+        }
+    } catch (e) {
+        showMessage('Ошибка подключения', 'error');
+    }
+}
+
+async function loadTrainerDashboard() {
+    try {
+        const res = await fetch('/api/clients');
+        const clients = await res.json();
+        document.getElementById('totalClients').textContent = clients.length;
+        const avgProg = Math.round(clients.reduce((sum, c) => sum + c.progress, 0) / (clients.length || 1));
+        document.getElementById('avgProgress').textContent = avgProg + '%';
+        document.getElementById('activeToday').textContent = clients.length;
+        
+        let html = '';
+        clients.forEach(c => {
+            html += `<div class="card"><div style="display: flex; justify-content: space-between; align-items: center;"><div><div style="font-weight: 700;">${c.name}</div><div style="font-size: 12px; color: #999;">${c.username}</div></div><div style="text-align: right;"><div style="color: #c41e3a; font-weight: 700; font-size: 18px;">${c.progress}%</div><button class="btn-small" onclick="deleteClient(${c.id})">Удалить</button></div></div></div>`;
+        });
+        document.getElementById('clientsList').innerHTML = html || '<div class="empty-state">Нет клиентов</div>';
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function createNewClient() {
+    const name = document.getElementById('newClientName').value;
+    const username = document.getElementById('newClientUsername').value;
+    const password = document.getElementById('newClientPassword').value;
+    if (!name || !username || !password) {
+        showMessage('Заполните все поля', 'error');
+        return;
+    }
+    try {
+        const res = await fetch('/api/create-client', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, username, password, goal: 'Набор мышечной массы', goalDetails: '' })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('Клиент добавлен!');
+            document.getElementById('newClientName').value = '';
+            document.getElementById('newClientUsername').value = '';
+            document.getElementById('newClientPassword').value = '';
+            loadTrainerDashboard();
+        } else {
+            showMessage(data.message || 'Ошибка', 'error');
+        }
+    } catch (e) {
+        showMessage('Ошибка подключения', 'error');
+    }
+}
+
+async function deleteClient(clientId) {
+    if (!confirm('Удалить клиента?')) return;
+    try {
+        const res = await fetch(`/api/client/${clientId}`, { method: 'DELETE' });
+        if (res.ok) {
+            showMessage('Клиент удален');
+            loadTrainerDashboard();
+        }
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function loadClientsForPlan() {
+    try {
+        const res = await fetch('/api/clients');
+        const clients = await res.json();
+        let html = '<option value="">-- Выберите клиента --</option>';
+        clients.forEach(c => {
+            html += `<option value="${c.id}">${c.name}</option>`;
+        });
+        document.getElementById('planClientSelect').innerHTML = html;
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function loadClientPlan() {
+    const clientId = document.getElementById('planClientSelect').value;
+    if (!clientId) return;
+    currentClientForPlan = clientId;
+    try {
+        const res = await fetch(`/api/plan/${clientId}`);
+        const plan = await res.json();
+        const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+        let workoutHtml = '', nutritionHtml = '';
+        days.forEach(day => {
+            const exercises = plan && plan.plan && plan.plan[day] ? plan.plan[day] : '';
+            const nutrition = plan && plan.nutrition && plan.nutrition[day] ? plan.nutrition[day] : '';
+            workoutHtml += `<div class="form-section"><label style="font-size: 16px; font-weight: 700; color: #c41e3a;">🏋️ ${day}</label><textarea id="day-workout-${day}" placeholder="Упражнения..." style="min-height: 100px; margin-top: 8px;">${exercises}</textarea></div>`;
+            nutritionHtml += `<div class="form-section"><label style="font-size: 16px; font-weight: 700; color: #c41e3a;">🍽️ ${day}</label><textarea id="day-nutrition-${day}" placeholder="Питание..." style="min-height: 100px; margin-top: 8px;">${nutrition}</textarea></div>`;
+        });
+        document.getElementById('workoutPlanEditor').innerHTML = workoutHtml;
+        document.getElementById('nutritionPlanEditor').innerHTML = nutritionHtml;
+        document.getElementById('planDays').style.display = 'block';
+        setPlanMode('workout');
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function savePlan() {
+    if (!currentClientForPlan) {
+        showMessage('Выберите клиента', 'error');
+        return;
+    }
+    const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+    const plan = { plan: {}, nutrition: {} };
+    days.forEach(day => {
+        const workoutText = document.getElementById(`day-workout-${day}`).value;
+        const nutritionText = document.getElementById(`day-nutrition-${day}`).value;
+        plan.plan[day] = workoutText.split('\n').filter(e => e.trim());
+        plan.nutrition[day] = nutritionText.split('\n').filter(e => e.trim());
+    });
+    try {
+        const res = await fetch(`/api/plan/${currentClientForPlan}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(plan)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('План сохранён!');
+        }
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+function setDefaultDate() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('activityDate').value = today;
+}
+
+async function loadActivityByDate() {
+    const date = document.getElementById('activityDate').value;
+    if (!date) {
+        showMessage('Выберите дату', 'error');
+        return;
+    }
+    try {
+        const res = await fetch(`/api/activity/${date}`);
+        const data = await res.json();
+        let html = `<div class="section"><h3>Активность на ${date}</h3>`;
+        data.activity.forEach(client => {
+            if (client.stats.mealsCount > 0 || client.stats.workoutsCount > 0) {
+                html += `<div class="card"><div style="font-weight: 700; margin-bottom: 8px;">${client.clientName}</div><div style="font-size: 13px; color: #666;">🍽️ ${client.stats.mealsCount} приемов (${client.stats.totalCalories}ккал)</div><div style="font-size: 13px; color: #666;">🏋️ ${client.stats.workoutsCount} тренировок (${client.stats.totalDuration}мин)</div></div>`;
+            }
+        });
+        html += '</div>';
+        document.getElementById('activitySection').innerHTML = html;
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function sendAnnouncement() {
+    const text = document.getElementById('announcementText').value;
+    if (!text) {
+        showMessage('Напишите объявление', 'error');
+        return;
+    }
+    try {
+        const res = await fetch('/api/announcement', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showMessage('Объявление отправлено!');
+            document.getElementById('announcementText').value = '';
+            loadTrainerAnnouncements();
+            updateAnnouncementBadge();
+        }
+    } catch (e) { showMessage('Ошибка', 'error'); }
+}
+
+async function loadTrainerAnnouncements() {
+    try {
+        const res = await fetch('/api/announcements');
+        const announcements = await res.json();
+        let html = '';
+        announcements.forEach(a => {
+            const date = new Date(a.date).toLocaleString('ru-RU');
+            html += `<div class="card"><div style="display: flex; justify-content: space-between;"><div>${a.text}</div><button class="btn-small" onclick="deleteAnnouncement(${a.id})">✕</button></div><div style="font-size: 11px; color: #999; margin-top: 8px;">${date}</div></div>`;
+        });
+        document.getElementById('announcementsList').innerHTML = html || '<div class="empty-state">Нет</div>';
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function deleteAnnouncement(id) {
+    try {
+        await fetch(`/api/announcement/${id}`, { method: 'DELETE' });
+        loadTrainerAnnouncements();
+        updateAnnouncementBadge();
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function loadClientProfile() {
+    try {
+        const res = await fetch(`/api/client/${currentUser}`);
+        const client = await res.json();
+        document.getElementById('clientWeight').textContent = client.stats.weight + 'кг';
+        document.getElementById('clientProgress').textContent = client.progress + '%';
+        document.getElementById('clientGoalText').textContent = client.goal;
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function loadClientPlanView() {
+    try {
+        const res = await fetch(`/api/plan/${currentUser}`);
+        const plan = await res.json();
+        if (!plan || !plan.plan) {
+            document.getElementById('clientPlanContent').innerHTML = '<div class="empty-state">План не готов</div>';
+            return;
+        }
+        const days = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+        let html = '';
+        for (const day of days) {
+            if ((plan.plan[day] && plan.plan[day].length > 0) || (plan.nutrition && plan.nutrition[day] && plan.nutrition[day].length > 0)) {
+                html += `<div class="card"><div style="margin-bottom: 12px;"><strong style="color: #c41e3a; font-size: 16px;">📅 ${day}</strong></div>`;
+                if (plan.plan[day] && plan.plan[day].length > 0) {
+                    html += `<div style="margin-bottom: 12px;"><strong style="color: #c41e3a;">🏋️ Тренировки:</strong></div>`;
+                    plan.plan[day].forEach((ex) => html += `<div style="background: #f5f5f5; padding: 10px; margin-bottom: 8px; border-radius: 6px;">${ex}</div>`);
+                }
+                if (plan.nutrition && plan.nutrition[day] && plan.nutrition[day].length > 0) {
+                    html += `<div style="margin-top: 12px; margin-bottom: 12px;"><strong style="color: #c41e3a;">🍽️ Питание:</strong></div>`;
+                    plan.nutrition[day].forEach((food) => html += `<div style="background: #fff5f5; padding: 10px; margin-bottom: 8px; border-radius: 6px;">${food}</div>`);
+                }
+                html += `</div>`;
+            }
+        }
+        document.getElementById('clientPlanContent').innerHTML = html || '<div class="empty-state">Пусто</div>';
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function loadClientStats() {
+    try {
+        const res = await fetch(`/api/plan-stats/${currentUser}`);
+        const data = await res.json();
+        const stats = data.stats;
+        let html = '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px;">';
+        Object.entries(stats).forEach(([day, data]) => {
+            html += `<div class="stat-card"><div class="stat-label">${day}</div><div class="stat-value">${data.percent}%</div></div>`;
+        });
+        html += '</div>';
+        document.getElementById('clientStatsContent').innerHTML = html || '<div class="empty-state">Нет данных</div>';
+    } catch (e) { console.log('Error:', e); }
+}
+
+async function loadClientAnnouncements() {
+    try {
+        const res = await fetch('/api/announcements');
+        const announcements = await res.json();
+        let html = '';
+        announcements.forEach(a => {
+            const date = new Date(a.date).toLocaleString('ru-RU');
+            html += `<div class="card"><div>${a.text}</div><div style="font-size: 11px; color: #999; margin-top: 8px;">${date}</div></div>`;
+        });
+        document.getElementById('clientAnnouncementsList').innerHTML = html || '<div class="empty-state">Нет</div>';
+    } catch (e) { console.log('Error:', e); }
+}
+
+function logout() {
+    currentUser = null;
+    document.getElementById('loginScreen').classList.remove('hidden');
+    document.getElementById('trainerDashboard').classList.add('hidden');
+    document.getElementById('clientDashboard').classList.add('hidden');
+    document.getElementById('pinInput').value = '';
+    document.getElementById('clientUsername').value = '';
+    document.getElementById('clientPassword').value = '';
+}
+</script>
+
+</body>
+</html>
